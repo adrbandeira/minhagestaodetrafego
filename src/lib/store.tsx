@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Client, Review, Task, Note, ReviewHistory } from '@/lib/types';
+import { supabase } from '@/integrations/supabase/client';
 
 const today = new Date().toISOString().split('T')[0];
 const daysAgo = (n: number) => {
@@ -8,47 +9,63 @@ const daysAgo = (n: number) => {
   return d.toISOString().split('T')[0];
 };
 
-const initialClients: Client[] = [
-  { id: '1', name: 'Loja Bella', type: 'pessoal', status: 'ativo', segment: 'Moda Feminina', platforms: ['Meta Ads', 'Google Ads'], budget: 3000, contact: '(11) 99999-1234', startDate: '2024-08-01', lastReviewDate: today },
-  { id: '2', name: 'Dr. Marcos Silva', type: 'pessoal', status: 'ativo', segment: 'Odontologia', platforms: ['Meta Ads'], budget: 2000, contact: '(11) 98888-5678', startDate: '2024-09-15', lastReviewDate: daysAgo(1) },
-  { id: '3', name: 'AutoPeças Central', type: 'agenciado', status: 'alerta', segment: 'Automotivo', platforms: ['Google Ads'], budget: 5000, contact: '(21) 97777-4321', startDate: '2024-06-01', lastReviewDate: daysAgo(5) },
-  { id: '4', name: 'Pizzaria Napoli', type: 'agenciado', status: 'ativo', segment: 'Alimentação', platforms: ['Meta Ads', 'Google Ads'], budget: 1500, contact: '(31) 96666-8765', startDate: '2024-10-01', lastReviewDate: daysAgo(2) },
-  { id: '5', name: 'Studio Fit', type: 'pessoal', status: 'pausado', segment: 'Fitness', platforms: ['Meta Ads'], budget: 1000, contact: '(41) 95555-1111', startDate: '2024-11-01', lastReviewDate: daysAgo(7) },
-];
+// Map DB rows (snake_case) to frontend types (camelCase)
+function mapClient(row: any): Client {
+  return {
+    id: row.id,
+    name: row.name,
+    type: row.type,
+    status: row.status,
+    segment: row.segment,
+    platforms: row.platforms || [],
+    budget: Number(row.budget),
+    contact: row.contact,
+    startDate: row.start_date || '',
+    lastReviewDate: row.last_review_date || null,
+  };
+}
 
-const initialReviews: Review[] = [
-  { id: 'r1', clientId: '1', date: today, time: '09:00', platforms: ['Meta Ads', 'Google Ads'], priority: 'alta', done: false },
-  { id: 'r2', clientId: '2', date: today, time: '10:30', platforms: ['Meta Ads'], priority: 'media', done: false },
-  { id: 'r3', clientId: '3', date: today, time: '11:00', platforms: ['Google Ads'], priority: 'alta', done: true },
-  { id: 'r4', clientId: '4', date: today, time: '14:00', platforms: ['Meta Ads', 'Google Ads'], priority: 'baixa', done: false },
-  { id: 'r5', clientId: '1', date: today, time: '16:00', platforms: ['Google Ads'], priority: 'media', done: false },
-];
+function mapReview(row: any): Review {
+  return {
+    id: row.id,
+    clientId: row.client_id,
+    date: row.date,
+    time: row.time,
+    platforms: row.platforms || [],
+    priority: row.priority,
+    done: row.done,
+    summary: row.summary,
+  };
+}
 
-const initialTasks: Task[] = [
-  { id: 't1', clientId: '1', title: 'Criar novas campanhas de remarketing', dueDate: today, done: false },
-  { id: 't2', clientId: '2', title: 'Atualizar criativos do Instagram', dueDate: daysAgo(-2), done: false },
-  { id: 't3', clientId: '3', title: 'Revisar palavras-chave negativas', dueDate: today, done: false },
-  { id: 't4', clientId: null, title: 'Reunião com equipe de design', dueDate: daysAgo(-1), done: false },
-  { id: 't5', clientId: '4', title: 'Configurar conversões no GA4', dueDate: daysAgo(-3), done: true },
-];
+function mapTask(row: any): Task {
+  return {
+    id: row.id,
+    clientId: row.client_id,
+    title: row.title,
+    dueDate: row.due_date,
+    done: row.done,
+  };
+}
 
-const initialNotes: Note[] = [
-  { id: 'n1', clientId: '1', date: today, content: 'CPA de remarketing caiu 15% após ajuste de público. Continuar monitorando.' },
-  { id: 'n2', clientId: '1', date: daysAgo(1), content: 'Reunião com cliente para alinhar novos criativos. Aprovados 3 novos banners.' },
-  { id: 'n3', clientId: '2', date: daysAgo(2), content: 'Pausei campanhas de stories por baixo CTR. Testar carrossel na próxima semana.' },
-];
+function mapNote(row: any): Note {
+  return {
+    id: row.id,
+    clientId: row.client_id,
+    date: row.date,
+    content: row.content,
+  };
+}
 
-const initialHistory: ReviewHistory[] = [
-  { id: 'h1', clientId: '1', date: today, summary: 'Ajustei lances de CPA e pausei 2 anúncios de baixo desempenho', platforms: ['Meta Ads'], tags: ['CPA', 'Otimização'] },
-  { id: 'h2', clientId: '1', date: daysAgo(1), summary: 'Criei nova campanha de conversão com público lookalike', platforms: ['Meta Ads', 'Google Ads'], tags: ['Campanha nova', 'Lookalike'] },
-  { id: 'h3', clientId: '3', date: daysAgo(5), summary: 'Revisão de palavras-chave. Adicionei 15 negativas.', platforms: ['Google Ads'], tags: ['Palavras-chave'] },
-];
-
-function loadFromStorage<T>(key: string, fallback: T): T {
-  try {
-    const stored = localStorage.getItem(key);
-    return stored ? JSON.parse(stored) : fallback;
-  } catch { return fallback; }
+function mapHistory(row: any): ReviewHistory {
+  return {
+    id: row.id,
+    clientId: row.client_id,
+    date: row.date,
+    summary: row.summary,
+    platforms: row.platforms || [],
+    tags: row.tags || [],
+  };
 }
 
 interface StoreContextType {
@@ -57,6 +74,7 @@ interface StoreContextType {
   tasks: Task[];
   notes: Note[];
   history: ReviewHistory[];
+  loading: boolean;
   addClient: (c: Omit<Client, 'id' | 'status' | 'lastReviewDate'>) => void;
   updateClient: (c: Client) => void;
   toggleReview: (id: string) => void;
@@ -78,47 +96,115 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | null>(null);
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
-  const [clients, setClients] = useState<Client[]>(() => loadFromStorage('mgt_clients', initialClients));
-  const [reviews, setReviews] = useState<Review[]>(() => loadFromStorage('mgt_reviews', initialReviews));
-  const [tasks, setTasks] = useState<Task[]>(() => loadFromStorage('mgt_tasks', initialTasks));
-  const [notes, setNotes] = useState<Note[]>(() => loadFromStorage('mgt_notes', initialNotes));
-  const [history] = useState<ReviewHistory[]>(() => loadFromStorage('mgt_history', initialHistory));
+  const [clients, setClients] = useState<Client[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [history, setHistory] = useState<ReviewHistory[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => { localStorage.setItem('mgt_clients', JSON.stringify(clients)); }, [clients]);
-  useEffect(() => { localStorage.setItem('mgt_reviews', JSON.stringify(reviews)); }, [reviews]);
-  useEffect(() => { localStorage.setItem('mgt_tasks', JSON.stringify(tasks)); }, [tasks]);
-  useEffect(() => { localStorage.setItem('mgt_notes', JSON.stringify(notes)); }, [notes]);
-
-  const addClient = useCallback((c: Omit<Client, 'id' | 'status' | 'lastReviewDate'>) => {
-    setClients(prev => [...prev, { ...c, id: crypto.randomUUID(), status: 'ativo', lastReviewDate: null }]);
+  // Fetch all data on mount
+  useEffect(() => {
+    async function fetchAll() {
+      setLoading(true);
+      const [cRes, rRes, tRes, nRes, hRes] = await Promise.all([
+        supabase.from('clients').select('*'),
+        supabase.from('reviews').select('*'),
+        supabase.from('tasks').select('*'),
+        supabase.from('notes').select('*'),
+        supabase.from('review_history').select('*'),
+      ]);
+      if (cRes.data) setClients(cRes.data.map(mapClient));
+      if (rRes.data) setReviews(rRes.data.map(mapReview));
+      if (tRes.data) setTasks(tRes.data.map(mapTask));
+      if (nRes.data) setNotes(nRes.data.map(mapNote));
+      if (hRes.data) setHistory(hRes.data.map(mapHistory));
+      setLoading(false);
+    }
+    fetchAll();
   }, []);
 
-  const updateClient = useCallback((c: Client) => {
-    setClients(prev => prev.map(x => x.id === c.id ? c : x));
+  const addClient = useCallback(async (c: Omit<Client, 'id' | 'status' | 'lastReviewDate'>) => {
+    const { data, error } = await supabase.from('clients').insert({
+      name: c.name,
+      type: c.type,
+      segment: c.segment,
+      platforms: c.platforms,
+      budget: c.budget,
+      contact: c.contact,
+      start_date: c.startDate,
+      status: 'ativo',
+    }).select().single();
+    if (data && !error) setClients(prev => [...prev, mapClient(data)]);
   }, []);
 
-  const toggleReview = useCallback((id: string) => {
-    setReviews(prev => prev.map(r => r.id === id ? { ...r, done: !r.done } : r));
+  const updateClient = useCallback(async (c: Client) => {
+    const { data, error } = await supabase.from('clients').update({
+      name: c.name,
+      type: c.type,
+      status: c.status,
+      segment: c.segment,
+      platforms: c.platforms,
+      budget: c.budget,
+      contact: c.contact,
+      start_date: c.startDate,
+      last_review_date: c.lastReviewDate,
+    }).eq('id', c.id).select().single();
+    if (data && !error) setClients(prev => prev.map(x => x.id === c.id ? mapClient(data) : x));
   }, []);
 
-  const addReview = useCallback((r: Omit<Review, 'id'>) => {
-    setReviews(prev => [...prev, { ...r, id: crypto.randomUUID() }]);
+  const toggleReview = useCallback(async (id: string) => {
+    const review = reviews.find(r => r.id === id);
+    if (!review) return;
+    const newDone = !review.done;
+    const { error } = await supabase.from('reviews').update({ done: newDone }).eq('id', id);
+    if (!error) setReviews(prev => prev.map(r => r.id === id ? { ...r, done: newDone } : r));
+  }, [reviews]);
+
+  const addReview = useCallback(async (r: Omit<Review, 'id'>) => {
+    const { data, error } = await supabase.from('reviews').insert({
+      client_id: r.clientId,
+      date: r.date,
+      time: r.time,
+      platforms: r.platforms,
+      priority: r.priority,
+      done: r.done,
+    }).select().single();
+    if (data && !error) setReviews(prev => [...prev, mapReview(data)]);
   }, []);
 
-  const toggleTask = useCallback((id: string) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  const toggleTask = useCallback(async (id: string) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    const newDone = !task.done;
+    const { error } = await supabase.from('tasks').update({ done: newDone }).eq('id', id);
+    if (!error) setTasks(prev => prev.map(t => t.id === id ? { ...t, done: newDone } : t));
+  }, [tasks]);
+
+  const addTask = useCallback(async (t: Omit<Task, 'id'>) => {
+    const { data, error } = await supabase.from('tasks').insert({
+      client_id: t.clientId,
+      title: t.title,
+      due_date: t.dueDate,
+      done: t.done,
+    }).select().single();
+    if (data && !error) setTasks(prev => [...prev, mapTask(data)]);
   }, []);
 
-  const addTask = useCallback((t: Omit<Task, 'id'>) => {
-    setTasks(prev => [...prev, { ...t, id: crypto.randomUUID() }]);
+  const addNote = useCallback(async (n: Omit<Note, 'id'>) => {
+    const { data, error } = await supabase.from('notes').insert({
+      client_id: n.clientId,
+      date: n.date,
+      content: n.content,
+    }).select().single();
+    if (data && !error) setNotes(prev => [...prev, mapNote(data)]);
   }, []);
 
-  const addNote = useCallback((n: Omit<Note, 'id'>) => {
-    setNotes(prev => [...prev, { ...n, id: crypto.randomUUID() }]);
-  }, []);
-
-  const updateNote = useCallback((n: Note) => {
-    setNotes(prev => prev.map(x => x.id === n.id ? n : x));
+  const updateNote = useCallback(async (n: Note) => {
+    const { data, error } = await supabase.from('notes').update({
+      content: n.content,
+    }).eq('id', n.id).select().single();
+    if (data && !error) setNotes(prev => prev.map(x => x.id === n.id ? mapNote(data) : x));
   }, []);
 
   const getClientById = useCallback((id: string) => clients.find(c => c.id === id), [clients]);
@@ -139,7 +225,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <StoreContext.Provider value={{
-      clients, reviews, tasks, notes, history,
+      clients, reviews, tasks, notes, history, loading,
       addClient, updateClient, toggleReview, addReview, toggleTask, addTask, addNote, updateNote,
       getClientById, getClientName, getTodayReviews, getOpenTasks, getClientNotes, getClientHistory, getClientTasks, getClientsWithoutRecentReview,
     }}>
