@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useStore } from '@/lib/store';
-import { Zap, LayoutDashboard, ClipboardList, CheckSquare, User, ChevronDown, ChevronRight, Users, Plus, ArrowRight } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Zap, LayoutDashboard, ClipboardList, CheckSquare, User, ChevronDown, ChevronRight, Users, Plus, ArrowRight, Settings, LogOut } from 'lucide-react';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -10,6 +11,7 @@ interface AppLayoutProps {
 export default function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const { getTodayReviews, getOpenTasks } = useStore();
+  const { profile, isAdmin, signOut } = useAuth();
   const [pessoalOpen, setPessoalOpen] = useState(false);
   const [agenciadoOpen, setAgenciadoOpen] = useState(false);
 
@@ -19,11 +21,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   const isActive = (path: string) => location.pathname === path;
 
+  const showPessoal = profile?.hasPessoal ?? true;
+  const showAgenciado = profile?.hasAgenciado ?? true;
+
   return (
     <div className="flex h-screen w-full overflow-hidden">
-      {/* Sidebar */}
       <aside className="w-60 min-w-[240px] bg-surface border-r border-border flex flex-col overflow-y-auto">
-        {/* Logo */}
         <div className="px-5 py-5 border-b border-border">
           <Link to="/" className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -36,7 +39,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
           </Link>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 py-3">
           <div className="mb-1">
             <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-[1.5px] px-5 py-2">Menu</p>
@@ -47,56 +49,76 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
           <div className="mb-1">
             <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-[1.5px] px-5 py-2 mt-2">Clientes</p>
-            
-            {/* Pessoal */}
-            <button onClick={() => setPessoalOpen(!pessoalOpen)} className="w-full flex items-center gap-2.5 px-5 py-2 text-[13.5px] text-muted-foreground hover:text-foreground hover:bg-surface2 transition-colors">
-              {pessoalOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-              <Users className="w-4 h-4" />
-              <span>Clientes Pessoais</span>
-            </button>
-            {pessoalOpen && (
-              <div className="ml-10">
-                <Link to="/clientes/pessoal" className="flex items-center gap-2 px-3 py-1.5 text-[12.5px] text-muted-foreground hover:text-primary transition-colors">
-                  <ArrowRight className="w-3 h-3" /> Ver todos
-                </Link>
-                <Link to="/clientes/novo?tipo=pessoal" className="flex items-center gap-2 px-3 py-1.5 text-[12.5px] text-muted-foreground hover:text-primary transition-colors">
-                  <Plus className="w-3 h-3" /> Novo cliente
-                </Link>
-              </div>
+
+            {showPessoal && (
+              <>
+                <button onClick={() => setPessoalOpen(!pessoalOpen)} className="w-full flex items-center gap-2.5 px-5 py-2 text-[13.5px] text-muted-foreground hover:text-foreground hover:bg-surface2 transition-colors">
+                  {pessoalOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  <Users className="w-4 h-4" />
+                  <span>Clientes Pessoais</span>
+                </button>
+                {pessoalOpen && (
+                  <div className="ml-10">
+                    <Link to="/clientes/pessoal" className="flex items-center gap-2 px-3 py-1.5 text-[12.5px] text-muted-foreground hover:text-primary transition-colors">
+                      <ArrowRight className="w-3 h-3" /> Ver todos
+                    </Link>
+                    <Link to="/clientes/novo?tipo=pessoal" className="flex items-center gap-2 px-3 py-1.5 text-[12.5px] text-muted-foreground hover:text-primary transition-colors">
+                      <Plus className="w-3 h-3" /> Novo cliente
+                    </Link>
+                  </div>
+                )}
+              </>
             )}
 
-            {/* Agenciado */}
-            <button onClick={() => setAgenciadoOpen(!agenciadoOpen)} className="w-full flex items-center gap-2.5 px-5 py-2 text-[13.5px] text-muted-foreground hover:text-foreground hover:bg-surface2 transition-colors">
-              {agenciadoOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-              <Users className="w-4 h-4" />
-              <span>Clientes Agenciados</span>
-            </button>
-            {agenciadoOpen && (
-              <div className="ml-10">
-                <Link to="/clientes/agenciado" className="flex items-center gap-2 px-3 py-1.5 text-[12.5px] text-muted-foreground hover:text-primary transition-colors">
-                  <ArrowRight className="w-3 h-3" /> Ver todos
-                </Link>
-                <Link to="/clientes/novo?tipo=agenciado" className="flex items-center gap-2 px-3 py-1.5 text-[12.5px] text-muted-foreground hover:text-primary transition-colors">
-                  <Plus className="w-3 h-3" /> Novo cliente
-                </Link>
-              </div>
+            {showAgenciado && (
+              <>
+                <button onClick={() => setAgenciadoOpen(!agenciadoOpen)} className="w-full flex items-center gap-2.5 px-5 py-2 text-[13.5px] text-muted-foreground hover:text-foreground hover:bg-surface2 transition-colors">
+                  {agenciadoOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  <Users className="w-4 h-4" />
+                  <span>Clientes Agenciados</span>
+                </button>
+                {agenciadoOpen && (
+                  <div className="ml-10">
+                    <Link to="/clientes/agenciado" className="flex items-center gap-2 px-3 py-1.5 text-[12.5px] text-muted-foreground hover:text-primary transition-colors">
+                      <ArrowRight className="w-3 h-3" /> Ver todos
+                    </Link>
+                    <Link to="/clientes/novo?tipo=agenciado" className="flex items-center gap-2 px-3 py-1.5 text-[12.5px] text-muted-foreground hover:text-primary transition-colors">
+                      <Plus className="w-3 h-3" /> Novo cliente
+                    </Link>
+                  </div>
+                )}
+              </>
             )}
           </div>
+
+          {isAdmin && (
+            <div className="mb-1">
+              <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-[1.5px] px-5 py-2 mt-2">Admin</p>
+              <NavItem to="/admin" icon={<Settings className="w-4 h-4" />} label="Configurações" active={isActive('/admin')} />
+            </div>
+          )}
         </nav>
 
-        {/* Footer */}
-        <div className="px-5 py-4 border-t border-border flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-            <User className="w-4 h-4 text-primary" />
+        <div className="px-5 py-4 border-t border-border">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+              <User className="w-4 h-4 text-primary" />
+            </div>
+            <div className="text-[13px] flex-1 min-w-0">
+              <p className="text-foreground font-medium truncate">{profile?.name || 'Gestor'}</p>
+              <p className="text-muted-foreground text-[11px]">{isAdmin ? 'Admin' : 'Gestor'}</p>
+            </div>
           </div>
-          <div className="text-[13px]">
-            <p className="text-foreground font-medium">Gestor</p>
-            <p className="text-muted-foreground text-[11px]">Online</p>
-          </div>
+          <button
+            onClick={signOut}
+            className="w-full flex items-center gap-2 px-2 py-1.5 text-[12px] text-muted-foreground hover:text-destructive transition-colors rounded"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Sair
+          </button>
         </div>
       </aside>
 
-      {/* Main */}
       <main className="flex-1 overflow-y-auto p-8">
         {children}
       </main>
