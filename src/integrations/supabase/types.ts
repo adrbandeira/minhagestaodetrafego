@@ -28,6 +28,7 @@ export type Database = {
           status: string
           type: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           budget?: number
@@ -42,6 +43,7 @@ export type Database = {
           status?: string
           type: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           budget?: number
@@ -56,6 +58,40 @@ export type Database = {
           status?: string
           type?: string
           updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      invite_links: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          token: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
         }
         Relationships: []
       }
@@ -67,6 +103,7 @@ export type Database = {
           date: string
           id: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           client_id: string
@@ -75,6 +112,7 @@ export type Database = {
           date: string
           id?: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           client_id?: string
@@ -83,6 +121,7 @@ export type Database = {
           date?: string
           id?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -94,6 +133,36 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          has_agenciado: boolean
+          has_pessoal: boolean
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string
+          has_agenciado?: boolean
+          has_pessoal?: boolean
+          id?: string
+          name?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          has_agenciado?: boolean
+          has_pessoal?: boolean
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       review_history: {
         Row: {
           client_id: string
@@ -103,6 +172,7 @@ export type Database = {
           platforms: string[]
           summary: string
           tags: string[]
+          user_id: string | null
         }
         Insert: {
           client_id: string
@@ -112,6 +182,7 @@ export type Database = {
           platforms?: string[]
           summary: string
           tags?: string[]
+          user_id?: string | null
         }
         Update: {
           client_id?: string
@@ -121,6 +192,7 @@ export type Database = {
           platforms?: string[]
           summary?: string
           tags?: string[]
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -144,6 +216,7 @@ export type Database = {
           summary: string | null
           time: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           client_id: string
@@ -156,6 +229,7 @@ export type Database = {
           summary?: string | null
           time: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           client_id?: string
@@ -168,6 +242,7 @@ export type Database = {
           summary?: string | null
           time?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -188,6 +263,7 @@ export type Database = {
           id: string
           title: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           client_id?: string | null
@@ -197,6 +273,7 @@ export type Database = {
           id?: string
           title: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           client_id?: string | null
@@ -206,6 +283,7 @@ export type Database = {
           id?: string
           title?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -217,15 +295,57 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_invite: {
+        Args: { _token: string; _user_id: string }
+        Returns: boolean
+      }
+      ensure_profile: {
+        Args: {
+          _email: string
+          _has_agenciado: boolean
+          _has_pessoal: boolean
+          _name: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      maybe_promote_first_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -352,6 +472,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
