@@ -9,62 +9,38 @@ const daysAgo = (n: number) => {
   return d.toISOString().split('T')[0];
 };
 
-// Map DB rows (snake_case) to frontend types (camelCase)
+async function getCurrentUserId(): Promise<string | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user?.id ?? null;
+}
+
 function mapClient(row: any): Client {
   return {
-    id: row.id,
-    name: row.name,
-    type: row.type,
-    status: row.status,
-    segment: row.segment,
-    platforms: row.platforms || [],
-    budget: Number(row.budget),
-    contact: row.contact,
-    startDate: row.start_date || '',
-    lastReviewDate: row.last_review_date || null,
+    id: row.id, name: row.name, type: row.type, status: row.status,
+    segment: row.segment, platforms: row.platforms || [], budget: Number(row.budget),
+    contact: row.contact, startDate: row.start_date || '', lastReviewDate: row.last_review_date || null,
   };
 }
 
 function mapReview(row: any): Review {
   return {
-    id: row.id,
-    clientId: row.client_id,
-    date: row.date,
-    time: row.time,
-    platforms: row.platforms || [],
-    priority: row.priority,
-    done: row.done,
-    summary: row.summary,
+    id: row.id, clientId: row.client_id, date: row.date, time: row.time,
+    platforms: row.platforms || [], priority: row.priority, done: row.done, summary: row.summary,
   };
 }
 
 function mapTask(row: any): Task {
-  return {
-    id: row.id,
-    clientId: row.client_id,
-    title: row.title,
-    dueDate: row.due_date,
-    done: row.done,
-  };
+  return { id: row.id, clientId: row.client_id, title: row.title, dueDate: row.due_date, done: row.done };
 }
 
 function mapNote(row: any): Note {
-  return {
-    id: row.id,
-    clientId: row.client_id,
-    date: row.date,
-    content: row.content,
-  };
+  return { id: row.id, clientId: row.client_id, date: row.date, content: row.content };
 }
 
 function mapHistory(row: any): ReviewHistory {
   return {
-    id: row.id,
-    clientId: row.client_id,
-    date: row.date,
-    summary: row.summary,
-    platforms: row.platforms || [],
-    tags: row.tags || [],
+    id: row.id, clientId: row.client_id, date: row.date, summary: row.summary,
+    platforms: row.platforms || [], tags: row.tags || [],
   };
 }
 
@@ -103,7 +79,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [history, setHistory] = useState<ReviewHistory[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch all data on mount
   useEffect(() => {
     async function fetchAll() {
       setLoading(true);
@@ -125,30 +100,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const addClient = useCallback(async (c: Omit<Client, 'id' | 'status' | 'lastReviewDate'>) => {
+    const userId = await getCurrentUserId();
+    if (!userId) return;
     const { data, error } = await supabase.from('clients').insert({
-      name: c.name,
-      type: c.type,
-      segment: c.segment,
-      platforms: c.platforms,
-      budget: c.budget,
-      contact: c.contact,
-      start_date: c.startDate,
-      status: 'ativo',
+      name: c.name, type: c.type, segment: c.segment, platforms: c.platforms,
+      budget: c.budget, contact: c.contact, start_date: c.startDate, status: 'ativo', user_id: userId,
     }).select().single();
     if (data && !error) setClients(prev => [...prev, mapClient(data)]);
   }, []);
 
   const updateClient = useCallback(async (c: Client) => {
     const { data, error } = await supabase.from('clients').update({
-      name: c.name,
-      type: c.type,
-      status: c.status,
-      segment: c.segment,
-      platforms: c.platforms,
-      budget: c.budget,
-      contact: c.contact,
-      start_date: c.startDate,
-      last_review_date: c.lastReviewDate,
+      name: c.name, type: c.type, status: c.status, segment: c.segment,
+      platforms: c.platforms, budget: c.budget, contact: c.contact,
+      start_date: c.startDate, last_review_date: c.lastReviewDate,
     }).eq('id', c.id).select().single();
     if (data && !error) setClients(prev => prev.map(x => x.id === c.id ? mapClient(data) : x));
   }, []);
@@ -162,13 +127,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, [reviews]);
 
   const addReview = useCallback(async (r: Omit<Review, 'id'>) => {
+    const userId = await getCurrentUserId();
+    if (!userId) return;
     const { data, error } = await supabase.from('reviews').insert({
-      client_id: r.clientId,
-      date: r.date,
-      time: r.time,
-      platforms: r.platforms,
-      priority: r.priority,
-      done: r.done,
+      client_id: r.clientId, date: r.date, time: r.time, platforms: r.platforms,
+      priority: r.priority, done: r.done, user_id: userId,
     }).select().single();
     if (data && !error) setReviews(prev => [...prev, mapReview(data)]);
   }, []);
@@ -182,28 +145,25 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, [tasks]);
 
   const addTask = useCallback(async (t: Omit<Task, 'id'>) => {
+    const userId = await getCurrentUserId();
+    if (!userId) return;
     const { data, error } = await supabase.from('tasks').insert({
-      client_id: t.clientId,
-      title: t.title,
-      due_date: t.dueDate,
-      done: t.done,
+      client_id: t.clientId, title: t.title, due_date: t.dueDate, done: t.done, user_id: userId,
     }).select().single();
     if (data && !error) setTasks(prev => [...prev, mapTask(data)]);
   }, []);
 
   const addNote = useCallback(async (n: Omit<Note, 'id'>) => {
+    const userId = await getCurrentUserId();
+    if (!userId) return;
     const { data, error } = await supabase.from('notes').insert({
-      client_id: n.clientId,
-      date: n.date,
-      content: n.content,
+      client_id: n.clientId, date: n.date, content: n.content, user_id: userId,
     }).select().single();
     if (data && !error) setNotes(prev => [...prev, mapNote(data)]);
   }, []);
 
   const updateNote = useCallback(async (n: Note) => {
-    const { data, error } = await supabase.from('notes').update({
-      content: n.content,
-    }).eq('id', n.id).select().single();
+    const { data, error } = await supabase.from('notes').update({ content: n.content }).eq('id', n.id).select().single();
     if (data && !error) setNotes(prev => prev.map(x => x.id === n.id ? mapNote(data) : x));
   }, []);
 
