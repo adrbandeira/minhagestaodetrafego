@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useStore } from '@/lib/store';
 import { useAuth } from '@/hooks/useAuth';
-import { Zap, LayoutDashboard, ClipboardList, CheckSquare, User, ChevronDown, ChevronRight, Users, Plus, ArrowRight, Settings, LogOut } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
+import { Zap, LayoutDashboard, ClipboardList, CheckSquare, User, ChevronDown, ChevronRight, Users, Plus, ArrowRight, Settings, LogOut, Sun, Moon } from 'lucide-react';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -12,6 +13,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const { getTodayReviews, getOpenTasks } = useStore();
   const { profile, isAdmin, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [pessoalOpen, setPessoalOpen] = useState(false);
   const [agenciadoOpen, setAgenciadoOpen] = useState(false);
 
@@ -52,7 +54,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
             {showPessoal && (
               <>
-                <button onClick={() => setPessoalOpen(!pessoalOpen)} className="w-full flex items-center gap-2.5 px-5 py-2 text-[13.5px] text-muted-foreground hover:text-foreground hover:bg-surface2 transition-colors">
+                <button onClick={() => setPessoalOpen(!pessoalOpen)} className="w-full flex items-center gap-2.5 px-5 py-2 text-[13.5px] text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
                   {pessoalOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   <Users className="w-4 h-4" />
                   <span>Clientes Pessoais</span>
@@ -72,7 +74,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
             {showAgenciado && (
               <>
-                <button onClick={() => setAgenciadoOpen(!agenciadoOpen)} className="w-full flex items-center gap-2.5 px-5 py-2 text-[13.5px] text-muted-foreground hover:text-foreground hover:bg-surface2 transition-colors">
+                <button onClick={() => setAgenciadoOpen(!agenciadoOpen)} className="w-full flex items-center gap-2.5 px-5 py-2 text-[13.5px] text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
                   {agenciadoOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   <Users className="w-4 h-4" />
                   <span>Clientes Agenciados</span>
@@ -109,13 +111,22 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <p className="text-muted-foreground text-[11px]">{isAdmin ? 'Admin' : 'Gestor'}</p>
             </div>
           </div>
-          <button
-            onClick={signOut}
-            className="w-full flex items-center gap-2 px-2 py-1.5 text-[12px] text-muted-foreground hover:text-destructive transition-colors rounded"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            Sair
-          </button>
+          <div className="flex items-center justify-between">
+            <button
+              onClick={signOut}
+              className="flex items-center gap-2 px-2 py-1.5 text-[12px] text-muted-foreground hover:text-destructive transition-colors rounded"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Sair
+            </button>
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              title={theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -133,7 +144,7 @@ function NavItem({ to, icon, label, active, badge }: { to: string; icon: React.R
       className={`flex items-center gap-2.5 px-5 py-2 text-[13.5px] border-l-2 transition-all ${
         active
           ? 'text-primary bg-primary/5 border-l-primary font-medium'
-          : 'text-muted-foreground border-l-transparent hover:text-foreground hover:bg-surface2'
+          : 'text-muted-foreground border-l-transparent hover:text-foreground hover:bg-secondary'
       }`}
     >
       {icon}
