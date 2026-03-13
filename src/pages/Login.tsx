@@ -78,7 +78,7 @@ export default function Login() {
           </form>
 
           <p className="text-center text-muted-foreground text-xs mt-4">
-            Ainda não tem conta? Solicite um convite ao administrador.
+            Ainda não tem conta? <Link to="/register" className="text-primary hover:underline">Criar conta</Link>
           </p>
         </div>
       </div>
