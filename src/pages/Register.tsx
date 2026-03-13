@@ -12,8 +12,9 @@ export default function Register() {
   const token = searchParams.get('token') || '';
   const { signUp } = useAuth();
 
-  const [validatingToken, setValidatingToken] = useState(true);
-  const [tokenValid, setTokenValid] = useState(false);
+  const [validatingAccess, setValidatingAccess] = useState(true);
+  const [accessGranted, setAccessGranted] = useState(false);
+  const [bootstrapMode, setBootstrapMode] = useState(false);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -25,20 +26,40 @@ export default function Register() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    if (!token) {
-      setValidatingToken(false);
-      return;
-    }
-    supabase
-      .from('invite_links')
-      .select('id')
-      .eq('token', token)
-      .eq('active', true)
-      .single()
-      .then(({ data }) => {
-        setTokenValid(!!data);
-        setValidatingToken(false);
-      });
+    let cancelled = false;
+
+    const validateAccess = async () => {
+      if (token) {
+        const { data } = await supabase
+          .from('invite_links')
+          .select('id')
+          .eq('token', token)
+          .eq('active', true)
+          .single();
+
+        if (!cancelled) {
+          setBootstrapMode(false);
+          setAccessGranted(!!data);
+          setValidatingAccess(false);
+        }
+        return;
+      }
+
+      const { data } = await (supabase.rpc as any)('can_bootstrap_signup');
+      const canBootstrap = Boolean(data);
+
+      if (!cancelled) {
+        setBootstrapMode(canBootstrap);
+        setAccessGranted(canBootstrap);
+        setValidatingAccess(false);
+      }
+    };
+
+    validateAccess();
+
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,7 +77,7 @@ export default function Register() {
       name,
       hasPessoal,
       hasAgenciado,
-      inviteToken: token,
+      inviteToken: bootstrapMode ? '' : token,
     });
 
     if (error) {
@@ -67,7 +88,7 @@ export default function Register() {
     setLoading(false);
   };
 
-  if (validatingToken) {
+  if (validatingAccess) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -75,14 +96,18 @@ export default function Register() {
     );
   }
 
-  if (!token || !tokenValid) {
+  if (!accessGranted) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center max-w-sm">
           <XCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
-          <h1 className="font-syne font-bold text-lg text-foreground mb-2">Link inválido ou expirado</h1>
+          <h1 className="font-syne font-bold text-lg text-foreground mb-2">
+            {token ? 'Link inválido ou expirado' : 'Cadastro fechado'}
+          </h1>
           <p className="text-muted-foreground text-sm mb-4">
-            Este link de convite não é válido. Solicite um novo convite ao administrador.
+            {token
+              ? 'Este link de convite não é válido. Solicite um novo convite ao administrador.'
+              : 'O cadastro direto está fechado. Peça um link de convite para o administrador.'}
           </p>
           <Link to="/login">
             <Button variant="outline">Ir para Login</Button>
