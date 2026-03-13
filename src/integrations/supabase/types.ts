@@ -318,6 +318,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_bootstrap_signup: { Args: never; Returns: boolean }
       claim_invite: {
         Args: { _token: string; _user_id: string }
         Returns: boolean
