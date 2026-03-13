@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_balances: {
+        Row: {
+          balance: number
+          client_id: string
+          daily_spend: number
+          id: string
+          platform: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          balance?: number
+          client_id: string
+          daily_spend?: number
+          id?: string
+          platform: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          balance?: number
+          client_id?: string
+          daily_spend?: number
+          id?: string
+          platform?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_balances_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           budget: number
