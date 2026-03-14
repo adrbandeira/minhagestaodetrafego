@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/lib/store';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, ChevronDown, CheckSquare, ClipboardList, Wallet, TrendingDown } from 'lucide-react';
+import { FileText, ChevronDown, CheckSquare, ClipboardList, Wallet, TrendingDown, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface AdBalance {
   client_id: string;
@@ -9,6 +11,125 @@ interface AdBalance {
   balance: number;
   daily_spend: number;
   updated_at: string;
+}
+
+function getClientData(client: any, reviews: any[], tasks: any[], history: any[], balances: AdBalance[], monthStart: string, monthEnd: string) {
+  const clientReviews = reviews.filter(r => r.clientId === client.id && r.date >= monthStart && r.date <= monthEnd);
+  const doneReviews = clientReviews.filter(r => r.done).length;
+  const clientHistory = history.filter(h => h.clientId === client.id && h.date >= monthStart && h.date <= monthEnd);
+  const clientTasks = tasks.filter(t => t.clientId === client.id);
+  const doneTasks = clientTasks.filter(t => t.done).length;
+  const totalTasks = clientTasks.length;
+  const clientBalances = balances.filter(b => b.client_id === client.id);
+  return { clientReviews, doneReviews, clientHistory, clientTasks, doneTasks, totalTasks, clientBalances };
+}
+
+function exportClientPDF(client: any, data: ReturnType<typeof getClientData>, monthLabel: string) {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Header
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Relatório Mensal', 14, 20);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100);
+  doc.text(monthLabel, 14, 28);
+
+  // Client info
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0);
+  doc.text(client.name, 14, 42);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100);
+  doc.text(`${client.segment} — R$ ${client.budget.toLocaleString('pt-BR')}/mês`, 14, 49);
+
+  let y = 58;
+
+  // Reviews table
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0);
+  doc.text('Revisões', 14, y);
+  y += 2;
+
+  autoTable(doc, {
+    startY: y,
+    head: [['Métrica', 'Valor']],
+    body: [
+      ['Agendadas', String(data.clientReviews.length)],
+      ['Concluídas', String(data.doneReviews)],
+      ['Histórico registrado', String(data.clientHistory.length)],
+      ['Taxa de conclusão', data.clientReviews.length > 0 ? `${Math.round((data.doneReviews / data.clientReviews.length) * 100)}%` : '—'],
+    ],
+    theme: 'striped',
+    headStyles: { fillColor: [34, 139, 96] },
+    margin: { left: 14, right: 14 },
+  });
+
+  y = (doc as any).lastAutoTable.finalY + 12;
+
+  // Tasks table
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Tarefas', 14, y);
+  y += 2;
+
+  autoTable(doc, {
+    startY: y,
+    head: [['Métrica', 'Valor']],
+    body: [
+      ['Total', String(data.totalTasks)],
+      ['Concluídas', String(data.doneTasks)],
+      ['Pendentes', String(data.totalTasks - data.doneTasks)],
+      ['Taxa de conclusão', data.totalTasks > 0 ? `${Math.round((data.doneTasks / data.totalTasks) * 100)}%` : '—'],
+    ],
+    theme: 'striped',
+    headStyles: { fillColor: [34, 139, 96] },
+    margin: { left: 14, right: 14 },
+  });
+
+  y = (doc as any).lastAutoTable.finalY + 12;
+
+  // Ad Balances table
+  if (data.clientBalances.length > 0) {
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Verba de Anúncios', 14, y);
+    y += 2;
+
+    const balanceRows = data.clientBalances.map(b => {
+      const daysLeft = b.daily_spend > 0 ? Math.floor(b.balance / b.daily_spend) : null;
+      return [
+        b.platform,
+        `R$ ${b.balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+        `R$ ${b.daily_spend.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+        daysLeft !== null ? `${daysLeft} dias` : '—',
+      ];
+    });
+
+    autoTable(doc, {
+      startY: y,
+      head: [['Plataforma', 'Saldo', 'Investimento Diário', 'Verba acaba em']],
+      body: balanceRows,
+      theme: 'striped',
+      headStyles: { fillColor: [34, 139, 96] },
+      margin: { left: 14, right: 14 },
+    });
+  }
+
+  // Footer
+  const finalY = (doc as any).lastAutoTable?.finalY || y;
+  doc.setFontSize(8);
+  doc.setTextColor(150);
+  doc.text(`Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`, 14, finalY + 16);
+  doc.text('Minha Gestão de Tráfego', pageWidth - 14, finalY + 16, { align: 'right' });
+
+  const safeName = client.name.replace(/[^a-zA-Z0-9]/g, '_');
+  doc.save(`relatorio_${safeName}_${monthLabel.replace(/\s/g, '_')}.pdf`);
 }
 
 export default function MonthlyReport() {
@@ -52,6 +173,8 @@ export default function MonthlyReport() {
     return date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   };
 
+  const monthLabel = formatMonth(selectedMonth);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -78,24 +201,27 @@ export default function MonthlyReport() {
 
       <div className="space-y-6">
         {activeClients.map(client => {
-          const clientReviews = reviews.filter(r => r.clientId === client.id && r.date >= monthStart && r.date <= monthEnd);
-          const doneReviews = clientReviews.filter(r => r.done).length;
-          const clientHistory = history.filter(h => h.clientId === client.id && h.date >= monthStart && h.date <= monthEnd);
-          const clientTasks = tasks.filter(t => t.clientId === client.id);
-          const doneTasks = clientTasks.filter(t => t.done).length;
-          const totalTasks = clientTasks.length;
-          const clientBalances = balances.filter(b => b.client_id === client.id);
+          const data = getClientData(client, reviews, tasks, history, balances, monthStart, monthEnd);
 
           return (
             <div key={client.id} className="bg-card border border-border rounded-lg overflow-hidden">
-              <div className="px-5 py-4 border-b border-border flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-sm font-syne font-bold text-primary">
-                  {client.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+              <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-sm font-syne font-bold text-primary">
+                    {client.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{client.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{client.segment} — R$ {client.budget.toLocaleString('pt-BR')}/mês</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">{client.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{client.segment} — R$ {client.budget.toLocaleString('pt-BR')}/mês</p>
-                </div>
+                <button
+                  onClick={() => exportClientPDF(client, data, monthLabel)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-secondary text-foreground rounded-md text-[12px] font-medium hover:bg-secondary/80 transition-colors border border-border"
+                  title="Exportar PDF"
+                >
+                  <Download className="w-3.5 h-3.5" /> PDF
+                </button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border">
@@ -107,22 +233,22 @@ export default function MonthlyReport() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Agendadas</span>
-                      <span className="font-medium">{clientReviews.length}</span>
+                      <span className="font-medium">{data.clientReviews.length}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Concluídas</span>
-                      <span className="font-medium text-primary">{doneReviews}</span>
+                      <span className="font-medium text-primary">{data.doneReviews}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Histórico registrado</span>
-                      <span className="font-medium">{clientHistory.length}</span>
+                      <span className="font-medium">{data.clientHistory.length}</span>
                     </div>
-                    {clientReviews.length > 0 && (
+                    {data.clientReviews.length > 0 && (
                       <div className="mt-2">
                         <div className="w-full bg-secondary rounded-full h-2">
-                          <div className="bg-primary h-2 rounded-full transition-all" style={{ width: `${(doneReviews / clientReviews.length) * 100}%` }} />
+                          <div className="bg-primary h-2 rounded-full transition-all" style={{ width: `${(data.doneReviews / data.clientReviews.length) * 100}%` }} />
                         </div>
-                        <p className="text-[10px] text-muted-foreground mt-1">{Math.round((doneReviews / clientReviews.length) * 100)}% concluído</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{Math.round((data.doneReviews / data.clientReviews.length) * 100)}% concluído</p>
                       </div>
                     )}
                   </div>
@@ -136,22 +262,22 @@ export default function MonthlyReport() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Total</span>
-                      <span className="font-medium">{totalTasks}</span>
+                      <span className="font-medium">{data.totalTasks}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Concluídas</span>
-                      <span className="font-medium text-primary">{doneTasks}</span>
+                      <span className="font-medium text-primary">{data.doneTasks}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Pendentes</span>
-                      <span className="font-medium text-warn">{totalTasks - doneTasks}</span>
+                      <span className="font-medium text-warn">{data.totalTasks - data.doneTasks}</span>
                     </div>
-                    {totalTasks > 0 && (
+                    {data.totalTasks > 0 && (
                       <div className="mt-2">
                         <div className="w-full bg-secondary rounded-full h-2">
-                          <div className="bg-primary h-2 rounded-full transition-all" style={{ width: `${(doneTasks / totalTasks) * 100}%` }} />
+                          <div className="bg-primary h-2 rounded-full transition-all" style={{ width: `${(data.doneTasks / data.totalTasks) * 100}%` }} />
                         </div>
-                        <p className="text-[10px] text-muted-foreground mt-1">{Math.round((doneTasks / totalTasks) * 100)}% concluído</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{Math.round((data.doneTasks / data.totalTasks) * 100)}% concluído</p>
                       </div>
                     )}
                   </div>
@@ -162,11 +288,11 @@ export default function MonthlyReport() {
                   <h3 className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-1.5">
                     <Wallet className="w-3.5 h-3.5" /> Verba de Anúncios
                   </h3>
-                  {clientBalances.length === 0 ? (
+                  {data.clientBalances.length === 0 ? (
                     <p className="text-xs text-muted-foreground">Sem dados de verba registrados.</p>
                   ) : (
                     <div className="space-y-3">
-                      {clientBalances.map(b => {
+                      {data.clientBalances.map(b => {
                         const daysLeft = b.daily_spend > 0 ? Math.floor(b.balance / b.daily_spend) : null;
                         return (
                           <div key={b.platform} className="space-y-1">
