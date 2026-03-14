@@ -1,8 +1,26 @@
+import { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
-import { Users, ClipboardList, CheckSquare, AlertTriangle, Clock } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Users, ClipboardList, CheckSquare, AlertTriangle, Wallet } from 'lucide-react';
+
+interface AdBalance {
+  client_id: string;
+  platform: string;
+  balance: number;
+  daily_spend: number;
+}
 
 export default function Dashboard() {
   const { clients, getTodayReviews, getOpenTasks, getClientsWithoutRecentReview } = useStore();
+  const [balances, setBalances] = useState<AdBalance[]>([]);
+
+  useEffect(() => {
+    async function fetch() {
+      const { data } = await supabase.from('ad_balances').select('*');
+      if (data) setBalances(data as AdBalance[]);
+    }
+    fetch();
+  }, []);
 
   const todayReviews = getTodayReviews();
   const doneReviews = todayReviews.filter(r => r.done).length;
@@ -13,6 +31,17 @@ export default function Dashboard() {
   const today = new Date().toISOString().split('T')[0];
   const tasksDueToday = openTasks.filter(t => t.dueDate === today);
 
+  // Clientes com verba acabando (<=3 dias)
+  const lowBudgetAlerts = balances
+    .filter(b => b.daily_spend > 0 && Math.floor(b.balance / b.daily_spend) <= 3)
+    .map(b => {
+      const client = clients.find(c => c.id === b.client_id);
+      const daysLeft = Math.floor(b.balance / b.daily_spend);
+      return { ...b, clientName: client?.name || 'Desconhecido', daysLeft };
+    });
+
+  const hasAlerts = alertClients.length > 0 || tasksDueToday.length > 0 || lowBudgetAlerts.length > 0;
+
   return (
     <div>
       <h1 className="text-2xl font-syne font-bold mb-6">Dashboard</h1>
@@ -22,7 +51,7 @@ export default function Dashboard() {
         <StatCard icon={<Users className="w-5 h-5 text-primary" />} label="Clientes Ativos" value={activeClients} />
         <StatCard icon={<ClipboardList className="w-5 h-5 text-meta" />} label="Revisões Hoje" value={`${doneReviews}/${todayReviews.length}`} />
         <StatCard icon={<CheckSquare className="w-5 h-5 text-warn" />} label="Tarefas Abertas" value={openTasks.length} />
-        <StatCard icon={<AlertTriangle className="w-5 h-5 text-danger" />} label="Sem revisão +3 dias" value={alertClients.length} accent />
+        <StatCard icon={<AlertTriangle className="w-5 h-5 text-danger" />} label="Alertas Ativos" value={(alertClients.length > 0 ? 1 : 0) + (tasksDueToday.length > 0 ? 1 : 0) + lowBudgetAlerts.length} accent />
       </div>
 
       {/* Two columns */}
@@ -71,7 +100,15 @@ export default function Dashboard() {
                 <span className="text-sm flex-1">{tasksDueToday.length} tarefa{tasksDueToday.length > 1 ? 's' : ''} vence{tasksDueToday.length === 1 ? '' : 'm'} hoje</span>
               </div>
             )}
-            {alertClients.length === 0 && tasksDueToday.length === 0 && (
+            {lowBudgetAlerts.map(alert => (
+              <div key={`${alert.client_id}-${alert.platform}`} className="flex items-center gap-3 p-3 rounded-md bg-danger/5 border border-danger/20">
+                <Wallet className="w-4 h-4 text-danger flex-shrink-0" />
+                <span className="text-sm flex-1">
+                  Verba de <span className="font-medium">{alert.platform}</span> acaba em <span className="font-bold text-danger">{alert.daysLeft} dia{alert.daysLeft !== 1 ? 's' : ''}</span>
+                </span>
+              </div>
+            ))}
+            {!hasAlerts && (
               <p className="text-muted-foreground text-sm">Nenhum alerta no momento.</p>
             )}
           </div>
