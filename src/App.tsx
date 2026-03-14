@@ -16,6 +16,7 @@ import NewClient from "@/pages/NewClient";
 import AdminPanel from "@/pages/AdminPanel";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import MonthlyReport from "@/pages/MonthlyReport";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -63,6 +64,7 @@ const AppRoutes = () => (
     <Route path="/cliente/:id" element={<ProtectedRoute><AppLayout><ClientProfile /></AppLayout></ProtectedRoute>} />
     <Route path="/clientes/:type" element={<ProtectedRoute><AppLayout><ClientList /></AppLayout></ProtectedRoute>} />
     <Route path="/clientes/novo" element={<ProtectedRoute><AppLayout><NewClient /></AppLayout></ProtectedRoute>} />
+    <Route path="/relatorio" element={<ProtectedRoute><AppLayout><MonthlyReport /></AppLayout></ProtectedRoute>} />
     <Route path="/admin" element={<ProtectedRoute adminOnly><AppLayout><AdminPanel /></AppLayout></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>

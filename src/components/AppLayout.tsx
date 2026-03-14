@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useStore } from '@/lib/store';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
-import { Zap, LayoutDashboard, ClipboardList, CheckSquare, User, ChevronDown, ChevronRight, Users, Plus, ArrowRight, Settings, LogOut, Sun, Moon } from 'lucide-react';
+import { Zap, LayoutDashboard, ClipboardList, CheckSquare, User, ChevronDown, ChevronRight, Users, Plus, ArrowRight, Settings, LogOut, Sun, Moon, FileText } from 'lucide-react';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -47,6 +47,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             <NavItem to="/" icon={<LayoutDashboard className="w-4 h-4" />} label="Dashboard" active={isActive('/')} />
             <NavItem to="/revisoes" icon={<ClipboardList className="w-4 h-4" />} label="Revisões do Dia" active={isActive('/revisoes')} badge={pendingReviews > 0 ? pendingReviews : undefined} />
             <NavItem to="/tarefas" icon={<CheckSquare className="w-4 h-4" />} label="Tarefas Gerais" active={isActive('/tarefas')} badge={openTasks > 0 ? openTasks : undefined} />
+            <NavItem to="/relatorio" icon={<FileText className="w-4 h-4" />} label="Relatório Mensal" active={isActive('/relatorio')} />
           </div>
 
           <div className="mb-1">
