@@ -16,6 +16,7 @@ import NewClient from "@/pages/NewClient";
 import AdminPanel from "@/pages/AdminPanel";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import MonthlyReport from "@/pages/MonthlyReport";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
