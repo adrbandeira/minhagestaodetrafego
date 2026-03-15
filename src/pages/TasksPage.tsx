@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export default function TasksPage() {
-  const { tasks, toggleTask, addTask, getClientName, clients } = useStore();
+  const { tasks, toggleTask, addTask, deleteTask, getClientName, clients } = useStore();
   const [showForm, setShowForm] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
