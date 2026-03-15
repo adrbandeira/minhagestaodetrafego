@@ -59,6 +59,9 @@ interface StoreContextType {
   addTask: (t: Omit<Task, 'id'>) => void;
   addNote: (n: Omit<Note, 'id'>) => void;
   updateNote: (n: Note) => void;
+  deleteClient: (id: string) => void;
+  deleteTask: (id: string) => void;
+  deleteNote: (id: string) => void;
   getClientById: (id: string) => Client | undefined;
   getClientName: (id: string | null) => string;
   getTodayReviews: () => Review[];
