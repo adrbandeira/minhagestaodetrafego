@@ -173,17 +173,32 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const deleteClient = useCallback(async (id: string) => {
     const { error } = await supabase.from('clients').delete().eq('id', id);
-    if (!error) setClients(prev => prev.filter(c => c.id !== id));
+    if (!error) {
+      setClients(prev => prev.filter(c => c.id !== id));
+      toast({ title: 'Cliente excluído', description: 'O cliente foi removido com sucesso.' });
+    } else {
+      toast({ title: 'Erro ao excluir', description: 'Não foi possível excluir o cliente.', variant: 'destructive' });
+    }
   }, []);
 
   const deleteTask = useCallback(async (id: string) => {
     const { error } = await supabase.from('tasks').delete().eq('id', id);
-    if (!error) setTasks(prev => prev.filter(t => t.id !== id));
+    if (!error) {
+      setTasks(prev => prev.filter(t => t.id !== id));
+      toast({ title: 'Tarefa excluída', description: 'A tarefa foi removida com sucesso.' });
+    } else {
+      toast({ title: 'Erro ao excluir', description: 'Não foi possível excluir a tarefa.', variant: 'destructive' });
+    }
   }, []);
 
   const deleteNote = useCallback(async (id: string) => {
     const { error } = await supabase.from('notes').delete().eq('id', id);
-    if (!error) setNotes(prev => prev.filter(n => n.id !== id));
+    if (!error) {
+      setNotes(prev => prev.filter(n => n.id !== id));
+      toast({ title: 'Anotação excluída', description: 'A anotação foi removida com sucesso.' });
+    } else {
+      toast({ title: 'Erro ao excluir', description: 'Não foi possível excluir a anotação.', variant: 'destructive' });
+    }
   }, []);
 
   const getClientById = useCallback((id: string) => clients.find(c => c.id === id), [clients]);
