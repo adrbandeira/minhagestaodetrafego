@@ -170,6 +170,21 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (data && !error) setNotes(prev => prev.map(x => x.id === n.id ? mapNote(data) : x));
   }, []);
 
+  const deleteClient = useCallback(async (id: string) => {
+    const { error } = await supabase.from('clients').delete().eq('id', id);
+    if (!error) setClients(prev => prev.filter(c => c.id !== id));
+  }, []);
+
+  const deleteTask = useCallback(async (id: string) => {
+    const { error } = await supabase.from('tasks').delete().eq('id', id);
+    if (!error) setTasks(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  const deleteNote = useCallback(async (id: string) => {
+    const { error } = await supabase.from('notes').delete().eq('id', id);
+    if (!error) setNotes(prev => prev.filter(n => n.id !== id));
+  }, []);
+
   const getClientById = useCallback((id: string) => clients.find(c => c.id === id), [clients]);
   const getClientName = useCallback((id: string | null) => {
     if (!id) return 'Geral';
