@@ -204,7 +204,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   return (
     <StoreContext.Provider value={{
       clients, reviews, tasks, notes, history, loading,
-      addClient, updateClient, toggleReview, addReview, toggleTask, addTask, addNote, updateNote,
+      addClient, updateClient, toggleReview, addReview, toggleTask, addTask, addNote, updateNote, deleteClient, deleteTask, deleteNote,
       getClientById, getClientName, getTodayReviews, getOpenTasks, getClientNotes, getClientHistory, getClientTasks, getClientsWithoutRecentReview,
     }}>
       {children}
