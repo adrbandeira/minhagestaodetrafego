@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export default function ClientNotes({ clientId }: { clientId: string }) {
-  const { getClientNotes, addNote, updateNote } = useStore();
+  const { getClientNotes, addNote, updateNote, deleteNote } = useStore();
   const notes = getClientNotes(clientId);
   const [selectedNote, setSelectedNote] = useState(notes[0] || null);
   const [editContent, setEditContent] = useState(selectedNote?.content || '');
@@ -16,7 +20,6 @@ export default function ClientNotes({ clientId }: { clientId: string }) {
       setEditContent(existing.content);
     } else {
       addNote({ clientId, date: today, content: '' });
-      // Will be available after re-render; for now set empty
       setSelectedNote(null);
       setEditContent('');
     }
@@ -28,9 +31,16 @@ export default function ClientNotes({ clientId }: { clientId: string }) {
     }
   };
 
+  const handleDelete = (id: string) => {
+    deleteNote(id);
+    if (selectedNote?.id === id) {
+      setSelectedNote(null);
+      setEditContent('');
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Left: note list */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-syne font-bold text-sm">Anotações</h3>
@@ -43,17 +53,35 @@ export default function ClientNotes({ clientId }: { clientId: string }) {
             <div
               key={n.id}
               onClick={() => { setSelectedNote(n); setEditContent(n.content); }}
-              className={`p-3 rounded-lg cursor-pointer transition-colors border ${selectedNote?.id === n.id ? 'bg-primary/5 border-primary/30' : 'bg-card border-border hover:bg-surface2/50'}`}
+              className={`p-3 rounded-lg cursor-pointer transition-colors border flex items-start gap-2 ${selectedNote?.id === n.id ? 'bg-primary/5 border-primary/30' : 'bg-card border-border hover:bg-surface2/50'}`}
             >
-              <p className="text-[11px] font-mono text-muted-foreground mb-1">{formatDate(n.date)}</p>
-              <p className="text-sm text-foreground line-clamp-2">{n.content || 'Sem conteúdo'}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-mono text-muted-foreground mb-1">{formatDate(n.date)}</p>
+                <p className="text-sm text-foreground line-clamp-2">{n.content || 'Sem conteúdo'}</p>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button onClick={e => e.stopPropagation()} className="p-1 text-muted-foreground hover:text-destructive transition-colors shrink-0 mt-0.5">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Excluir anotação</AlertDialogTitle>
+                    <AlertDialogDescription>Tem certeza que deseja excluir esta anotação?</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleDelete(n.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           ))}
           {notes.length === 0 && <p className="text-muted-foreground text-sm">Nenhuma anotação ainda.</p>}
         </div>
       </div>
 
-      {/* Right: editor */}
       <div>
         {selectedNote ? (
           <div className="bg-card border border-border rounded-lg p-5">

@@ -39,6 +39,23 @@ export default function TasksPage() {
               <span className={`text-[11px] font-mono ${isDueToday ? 'text-danger font-medium' : isOverdue ? 'text-danger' : 'text-muted-foreground'}`}>
                 {formatDate(t.dueDate)}
               </span>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button className="p-1 text-muted-foreground hover:text-destructive transition-colors">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Excluir tarefa</AlertDialogTitle>
+                    <AlertDialogDescription>Tem certeza que deseja excluir esta tarefa?</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => deleteTask(t.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           );
         })}
