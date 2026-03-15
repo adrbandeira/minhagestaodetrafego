@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export default function ClientTasks({ clientId }: { clientId: string }) {
-  const { getClientTasks, toggleTask, addTask } = useStore();
+  const { getClientTasks, toggleTask, addTask, deleteTask } = useStore();
   const tasks = getClientTasks(clientId);
   const today = new Date().toISOString().split('T')[0];
   const [showForm, setShowForm] = useState(false);
@@ -51,6 +55,23 @@ export default function ClientTasks({ clientId }: { clientId: string }) {
               <span className={`text-[11px] font-mono ${isDueToday ? 'text-danger' : 'text-muted-foreground'}`}>
                 {new Date(t.dueDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
               </span>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button className="p-1 text-muted-foreground hover:text-destructive transition-colors">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Excluir tarefa</AlertDialogTitle>
+                    <AlertDialogDescription>Tem certeza que deseja excluir esta tarefa?</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => deleteTask(t.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           );
         })}

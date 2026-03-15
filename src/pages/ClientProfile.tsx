@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '@/lib/store';
 import { PlatformBadge, StatusChip, TypeChip } from '@/components/Badges';
-import { ArrowLeft, StickyNote, History, CheckSquare, Info, Wallet, Plus } from 'lucide-react';
+import { ArrowLeft, StickyNote, History, CheckSquare, Info, Wallet, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import ClientNotes from '@/components/ClientNotes';
 import ClientHistory from '@/components/ClientHistory';
@@ -9,6 +9,10 @@ import ClientTasks from '@/components/ClientTasks';
 import ClientInfo from '@/components/ClientInfo';
 import ClientAdBalances from '@/components/ClientAdBalances';
 import ClientReviewForm from '@/components/ClientReviewForm';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const tabs = ['Anotações', 'Histórico de Revisões', 'Tarefas', 'Verba', 'Informações'] as const;
 
@@ -23,7 +27,7 @@ const tabIcons: Record<typeof tabs[number], React.ReactNode> = {
 export default function ClientProfile() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getClientById } = useStore();
+  const { getClientById, deleteClient } = useStore();
   const [activeTab, setActiveTab] = useState<typeof tabs[number]>('Anotações');
   const [showReviewForm, setShowReviewForm] = useState(false);
 
@@ -33,6 +37,11 @@ export default function ClientProfile() {
   const initials = client.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   const colors = ['bg-primary', 'bg-meta', 'bg-warn', 'bg-google', 'bg-danger'];
   const bgColor = colors[client.name.length % colors.length];
+
+  const handleDelete = async () => {
+    await deleteClient(client.id);
+    navigate(-1);
+  };
 
   return (
     <div>
@@ -57,10 +66,33 @@ export default function ClientProfile() {
             </div>
           </div>
         </div>
-        <button onClick={() => setShowReviewForm(!showReviewForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
-          <Plus className="w-4 h-4" /> Nova Revisão
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowReviewForm(!showReviewForm)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+            <Plus className="w-4 h-4" /> Nova Revisão
+          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button className="flex items-center gap-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg text-sm font-medium hover:bg-destructive/90 transition-colors">
+                <Trash2 className="w-4 h-4" /> Excluir
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Excluir cliente</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Tem certeza que deseja excluir <strong>{client.name}</strong>? Esta ação não pode ser desfeita e todos os dados relacionados serão perdidos.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Excluir
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
 
       {showReviewForm && (

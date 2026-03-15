@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export default function TasksPage() {
-  const { tasks, toggleTask, addTask, getClientName, clients } = useStore();
+  const { tasks, toggleTask, addTask, deleteTask, getClientName, clients } = useStore();
   const [showForm, setShowForm] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
@@ -35,6 +39,23 @@ export default function TasksPage() {
               <span className={`text-[11px] font-mono ${isDueToday ? 'text-danger font-medium' : isOverdue ? 'text-danger' : 'text-muted-foreground'}`}>
                 {formatDate(t.dueDate)}
               </span>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button className="p-1 text-muted-foreground hover:text-destructive transition-colors">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Excluir tarefa</AlertDialogTitle>
+                    <AlertDialogDescription>Tem certeza que deseja excluir esta tarefa?</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => deleteTask(t.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           );
         })}
