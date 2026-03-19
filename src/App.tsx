@@ -19,6 +19,7 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import ReportsPage from "@/pages/ReportsPage";
 import WalletBalance from "@/pages/WalletBalance";
+import SLAPage from "@/pages/SLAPage";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -69,6 +70,7 @@ const AppRoutes = () => (
     <Route path="/relatorios" element={<ProtectedRoute><AppLayout><ReportsPage /></AppLayout></ProtectedRoute>} />
     <Route path="/relatorio" element={<ProtectedRoute><AppLayout><ReportsPage /></AppLayout></ProtectedRoute>} />
     <Route path="/saldo/:type" element={<ProtectedRoute><AppLayout><WalletBalance /></AppLayout></ProtectedRoute>} />
+    <Route path="/sla" element={<ProtectedRoute><AppLayout><SLAPage /></AppLayout></ProtectedRoute>} />
     <Route path="/admin" element={<ProtectedRoute adminOnly><AppLayout><AdminPanel /></AppLayout></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
