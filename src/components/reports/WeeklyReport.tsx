@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { supabase } from '@/integrations/supabase/client';
-import { CheckCircle2, ClipboardList, CheckSquare, StickyNote, Wallet, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
+import { CheckCircle2, Circle, ClipboardList, CheckSquare, StickyNote, Wallet, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 
 interface AdBalance {
   client_id: string;
