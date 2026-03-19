@@ -5,7 +5,7 @@ import { Plus, LayoutGrid, List } from 'lucide-react';
 import { useState } from 'react';
 import PinGate from '@/components/PinGate';
 
-export default function ClientList() {
+function ClientListContent() {
   const { type } = useParams<{ type: string }>();
   const navigate = useNavigate();
   const { clients } = useStore();
@@ -13,8 +13,6 @@ export default function ClientList() {
 
   const filtered = clients.filter(c => c.type === type);
   const label = type === 'pessoal' ? 'Pessoais' : 'Agenciados';
-
-  const content = (
 
   return (
     <div>
@@ -78,4 +76,14 @@ export default function ClientList() {
       {filtered.length === 0 && <p className="text-muted-foreground text-sm">Nenhum cliente encontrado.</p>}
     </div>
   );
+}
+
+export default function ClientList() {
+  const { type } = useParams<{ type: string }>();
+
+  if (type === 'pessoal') {
+    return <PinGate><ClientListContent /></PinGate>;
+  }
+
+  return <ClientListContent />;
 }
