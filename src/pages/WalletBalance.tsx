@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useStore } from '@/lib/store';
+import { Platform } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from '@/hooks/use-toast';
