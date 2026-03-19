@@ -31,6 +31,7 @@ function WalletBalanceContent() {
   const [editingKey, setEditingKey] = useState<string | null>(null); // "clientId:platform"
   const [editForm, setEditForm] = useState<Partial<WalletRow>>({});
   const [platformFilter, setPlatformFilter] = useState<'all' | 'meta' | 'google'>('all');
+  const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
 
   const filtered = clients.filter(c => c.type === type && c.status === 'ativo');
   const label = type === 'pessoal' ? 'Pessoais' : 'Agenciados';
