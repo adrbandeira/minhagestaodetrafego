@@ -1,21 +1,39 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useStore } from '@/lib/store';
 import { Plus, Trash2 } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
+import PinGate from '@/components/PinGate';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
-export default function TasksPage() {
+type ClientTypeTab = 'agenciado' | 'pessoal';
+
+function TasksContent({ clientType }: { clientType: ClientTypeTab }) {
   const { tasks, toggleTask, addTask, deleteTask, getClientName, clients } = useStore();
   const [showForm, setShowForm] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
-  const sorted = [...tasks].sort((a, b) => {
-    if (a.done !== b.done) return a.done ? 1 : -1;
-    return a.dueDate.localeCompare(b.dueDate);
-  });
+
+  const clientIds = useMemo(() => {
+    const filtered = clients.filter(c => c.type === clientType);
+    return new Set(filtered.map(c => c.id));
+  }, [clients, clientType]);
+
+  const filteredClients = useMemo(() => clients.filter(c => c.type === clientType), [clients, clientType]);
+
+  const sorted = useMemo(() => {
+    return [...tasks]
+      .filter(t => {
+        if (!t.clientId) return true; // general tasks show in both
+        return clientIds.has(t.clientId);
+      })
+      .sort((a, b) => {
+        if (a.done !== b.done) return a.done ? 1 : -1;
+        return a.dueDate.localeCompare(b.dueDate);
+      });
+  }, [tasks, clientIds]);
 
   return (
     <div>
@@ -26,7 +44,7 @@ export default function TasksPage() {
         </button>
       </div>
 
-      {showForm && <NewTaskForm clients={clients} onAdd={(t) => { addTask(t); setShowForm(false); }} onCancel={() => setShowForm(false)} />}
+      {showForm && <NewTaskForm clients={filteredClients} onAdd={(t) => { addTask(t); setShowForm(false); }} onCancel={() => setShowForm(false)} />}
 
       <div className="space-y-2">
         {sorted.map(t => {
@@ -60,8 +78,39 @@ export default function TasksPage() {
             </div>
           );
         })}
-        {tasks.length === 0 && <p className="text-muted-foreground text-sm">Nenhuma tarefa cadastrada.</p>}
+        {sorted.length === 0 && <p className="text-muted-foreground text-sm">Nenhuma tarefa cadastrada.</p>}
       </div>
+    </div>
+  );
+}
+
+export default function TasksPage() {
+  const { clients } = useStore();
+  const [clientType, setClientType] = useState<ClientTypeTab>('agenciado');
+
+  const agenciados = clients.filter(c => c.type === 'agenciado' && c.status === 'ativo');
+  const pessoais = clients.filter(c => c.type === 'pessoal' && c.status === 'ativo');
+
+  return (
+    <div>
+      <div className="flex gap-1 bg-secondary rounded-lg p-1 mb-6 w-fit">
+        <button onClick={() => setClientType('agenciado')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${clientType === 'agenciado' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          Agenciados ({agenciados.length})
+        </button>
+        <button onClick={() => setClientType('pessoal')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${clientType === 'pessoal' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          Pessoais ({pessoais.length})
+        </button>
+      </div>
+
+      {clientType === 'pessoal' ? (
+        <PinGate>
+          <TasksContent clientType="pessoal" />
+        </PinGate>
+      ) : (
+        <TasksContent clientType="agenciado" />
+      )}
     </div>
   );
 }

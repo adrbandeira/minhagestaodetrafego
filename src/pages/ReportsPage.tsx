@@ -1,14 +1,21 @@
 import { useState } from 'react';
 import { FileText } from 'lucide-react';
+import { useStore } from '@/lib/store';
 import PinGate from '@/components/PinGate';
 import DailyReport from '@/components/reports/DailyReport';
 import WeeklyReport from '@/components/reports/WeeklyReport';
 import MonthlyReportContent from '@/components/reports/MonthlyReport';
 
 type ReportTab = 'diario' | 'semanal' | 'mensal';
+type ClientTypeTab = 'agenciado' | 'pessoal';
 
 function ReportsContent() {
+  const { clients } = useStore();
   const [tab, setTab] = useState<ReportTab>('diario');
+  const [clientType, setClientType] = useState<ClientTypeTab>('agenciado');
+
+  const agenciados = clients.filter(c => c.type === 'agenciado' && c.status === 'ativo');
+  const pessoais = clients.filter(c => c.type === 'pessoal' && c.status === 'ativo');
 
   return (
     <div>
@@ -26,17 +33,34 @@ function ReportsContent() {
         </div>
       </div>
 
-      {tab === 'diario' && <DailyReport />}
-      {tab === 'semanal' && <WeeklyReport />}
-      {tab === 'mensal' && <MonthlyReportContent />}
+      <div className="flex gap-1 bg-secondary rounded-lg p-1 mb-6 w-fit">
+        <button onClick={() => setClientType('agenciado')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${clientType === 'agenciado' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          Agenciados ({agenciados.length})
+        </button>
+        <button onClick={() => setClientType('pessoal')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${clientType === 'pessoal' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          Pessoais ({pessoais.length})
+        </button>
+      </div>
+
+      {clientType === 'pessoal' ? (
+        <PinGate>
+          {tab === 'diario' && <DailyReport clientType="pessoal" />}
+          {tab === 'semanal' && <WeeklyReport clientType="pessoal" />}
+          {tab === 'mensal' && <MonthlyReportContent clientType="pessoal" />}
+        </PinGate>
+      ) : (
+        <>
+          {tab === 'diario' && <DailyReport clientType="agenciado" />}
+          {tab === 'semanal' && <WeeklyReport clientType="agenciado" />}
+          {tab === 'mensal' && <MonthlyReportContent clientType="agenciado" />}
+        </>
+      )}
     </div>
   );
 }
 
 export default function ReportsPage() {
-  return (
-    <PinGate>
-      <ReportsContent />
-    </PinGate>
-  );
+  return <ReportsContent />;
 }
