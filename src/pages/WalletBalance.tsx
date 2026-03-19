@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useStore } from '@/lib/store';
 import { supabase } from '@/integrations/supabase/client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Wallet, Save, X, Pencil } from 'lucide-react';
@@ -27,6 +27,7 @@ function WalletBalanceContent() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<WalletRow>>({});
+  const [platformFilter, setPlatformFilter] = useState<'all' | 'meta' | 'google'>('all');
 
   const filtered = clients.filter(c => c.type === type);
   const label = type === 'pessoal' ? 'Pessoais' : 'Agenciados';
@@ -131,18 +132,37 @@ function WalletBalanceContent() {
     } catch { return '—'; }
   };
 
+  const displayRows = useMemo(() => {
+    if (platformFilter === 'all') return rows;
+    const keyword = platformFilter === 'meta' ? 'meta' : 'google';
+    return rows.filter(row => {
+      const client = clients.find(c => c.id === row.clientId);
+      return client?.platforms.some(p => p.toLowerCase().includes(keyword));
+    });
+  }, [rows, platformFilter, clients]);
+
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Wallet className="w-5 h-5 text-primary" />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Wallet className="w-5 h-5 text-primary" />
+          </div>
+          <h1 className="text-2xl font-syne font-bold">Saldo da Carteira — {label}</h1>
         </div>
-        <h1 className="text-2xl font-syne font-bold">Saldo da Carteira — {label}</h1>
+        <div className="flex gap-1 bg-secondary rounded-lg p-1">
+          {([['all', 'Todos'], ['meta', 'Meta Ads'], ['google', 'Google Ads']] as const).map(([key, lbl]) => (
+            <button key={key} onClick={() => setPlatformFilter(key)}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${platformFilter === key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+              {lbl}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading ? (
         <p className="text-muted-foreground text-sm">Carregando...</p>
-      ) : filtered.length === 0 ? (
+      ) : displayRows.length === 0 ? (
         <p className="text-muted-foreground text-sm">Nenhum cliente encontrado.</p>
       ) : (
         <div className="border border-border rounded-lg overflow-hidden">
@@ -161,7 +181,7 @@ function WalletBalanceContent() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map(row => {
+              {displayRows.map(row => {
                 const isEditing = editingId === row.clientId;
                 return (
                   <TableRow key={row.clientId} className="hover:bg-muted/30">
