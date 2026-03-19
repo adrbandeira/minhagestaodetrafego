@@ -20,6 +20,9 @@ export type Database = {
           client_id: string
           daily_spend: number
           id: string
+          last_payment_amount: number | null
+          last_payment_date: string | null
+          payment_method: string | null
           platform: string
           updated_at: string
           user_id: string | null
@@ -29,6 +32,9 @@ export type Database = {
           client_id: string
           daily_spend?: number
           id?: string
+          last_payment_amount?: number | null
+          last_payment_date?: string | null
+          payment_method?: string | null
           platform: string
           updated_at?: string
           user_id?: string | null
@@ -38,6 +44,9 @@ export type Database = {
           client_id?: string
           daily_spend?: number
           id?: string
+          last_payment_amount?: number | null
+          last_payment_date?: string | null
+          payment_method?: string | null
           platform?: string
           updated_at?: string
           user_id?: string | null
