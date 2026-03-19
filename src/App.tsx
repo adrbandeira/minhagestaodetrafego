@@ -82,7 +82,9 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <StoreProvider>
-              <AppRoutes />
+              <PessoalPinProvider>
+                <AppRoutes />
+              </PessoalPinProvider>
             </StoreProvider>
           </AuthProvider>
         </BrowserRouter>
