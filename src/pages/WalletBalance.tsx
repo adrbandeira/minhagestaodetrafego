@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Wallet, Save, X, Pencil } from 'lucide-react';
+import { DatePicker } from '@/components/ui/date-picker';
 import PinGate from '@/components/PinGate';
 
 interface WalletRow {
