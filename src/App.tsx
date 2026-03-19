@@ -66,7 +66,8 @@ const AppRoutes = () => (
     <Route path="/cliente/:id" element={<ProtectedRoute><AppLayout><ClientProfile /></AppLayout></ProtectedRoute>} />
     <Route path="/clientes/:type" element={<ProtectedRoute><AppLayout><ClientList /></AppLayout></ProtectedRoute>} />
     <Route path="/clientes/novo" element={<ProtectedRoute><AppLayout><NewClient /></AppLayout></ProtectedRoute>} />
-    <Route path="/relatorio" element={<ProtectedRoute><AppLayout><MonthlyReport /></AppLayout></ProtectedRoute>} />
+    <Route path="/relatorios" element={<ProtectedRoute><AppLayout><ReportsPage /></AppLayout></ProtectedRoute>} />
+    <Route path="/relatorio" element={<ProtectedRoute><AppLayout><ReportsPage /></AppLayout></ProtectedRoute>} />
     <Route path="/saldo/:type" element={<ProtectedRoute><AppLayout><WalletBalance /></AppLayout></ProtectedRoute>} />
     <Route path="/admin" element={<ProtectedRoute adminOnly><AppLayout><AdminPanel /></AppLayout></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
