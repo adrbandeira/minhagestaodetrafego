@@ -85,18 +85,23 @@ function ReviewContent({
           {WORK_DAYS.map(day => {
             const dayClients = currentSchedule.get(day) || [];
             const isToday = day === todayDay;
+            const allDone = isDayFullyReviewed(day);
             return (
-              <div key={day} className={`rounded-lg border p-4 ${isToday ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}>
-                <p className={`text-xs font-syne font-bold mb-3 uppercase tracking-wider ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
-                  {WEEKDAYS[day]} <span className="ml-1.5 font-mono text-[10px]">({dayClients.length})</span>
+              <div key={day} className={`rounded-lg border p-4 ${allDone ? 'border-primary bg-primary/10' : isToday ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}>
+                <p className={`text-xs font-syne font-bold mb-3 uppercase tracking-wider flex items-center gap-1.5 ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {allDone && <CheckCircle2 className="w-3.5 h-3.5 text-primary" />}
+                  {WEEKDAYS[day]} <span className="font-mono text-[10px]">({dayClients.length})</span>
                 </p>
                 <div className="space-y-1.5">
-                  {dayClients.map(c => (
-                    <div key={c.id} onClick={() => navigate(`/cliente/${c.id}`)}
-                      className="text-[12px] py-1.5 px-2 rounded hover:bg-secondary/80 cursor-pointer transition-colors truncate">
-                      {c.name}
-                    </div>
-                  ))}
+                  {dayClients.map(c => {
+                    const reviewed = isToday && isClientReviewed(c.id);
+                    return (
+                      <div key={c.id} onClick={() => navigate(`/cliente/${c.id}`)}
+                        className={`text-[12px] py-1.5 px-2 rounded hover:bg-secondary/80 cursor-pointer transition-colors truncate ${reviewed ? 'line-through text-muted-foreground' : ''}`}>
+                        {c.name}
+                      </div>
+                    );
+                  })}
                   {dayClients.length === 0 && <p className="text-[11px] text-muted-foreground">—</p>}
                 </div>
               </div>
