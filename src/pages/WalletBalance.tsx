@@ -15,6 +15,7 @@ interface WalletRow {
   lastPaymentAmount: number;
   lastPaymentDate: string;
   platform: string;
+  updatedAt: string;
 }
 
 export default function WalletBalance() {
@@ -54,6 +55,7 @@ export default function WalletBalance() {
         lastPaymentAmount: b?.last_payment_amount ?? 0,
         lastPaymentDate: b?.last_payment_date ?? '',
         platform: b?.platform ?? c.platforms?.[0] ?? '',
+        updatedAt: b?.updated_at ?? '',
       };
     });
     setRows(mapped);
@@ -113,6 +115,20 @@ export default function WalletBalance() {
   const formatCurrency = (v: number) =>
     v ? v.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '-';
 
+  const calcDaysLeft = (balance: number, daily: number) => {
+    if (!daily || daily <= 0 || !balance) return '—';
+    const days = Math.floor(balance / daily);
+    return `${days} dia${days !== 1 ? 's' : ''}`;
+  };
+
+  const formatDateTime = (iso: string) => {
+    if (!iso) return '—';
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    } catch { return '—'; }
+  };
+
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
@@ -137,6 +153,8 @@ export default function WalletBalance() {
                 <TableHead className="font-syne font-bold text-xs uppercase tracking-wider text-right">Valor Diário</TableHead>
                 <TableHead className="font-syne font-bold text-xs uppercase tracking-wider text-right">Valor Último Pgto</TableHead>
                 <TableHead className="font-syne font-bold text-xs uppercase tracking-wider">Data Último Pgto</TableHead>
+                <TableHead className="font-syne font-bold text-xs uppercase tracking-wider text-right">Dias Restantes</TableHead>
+                <TableHead className="font-syne font-bold text-xs uppercase tracking-wider">Última Atualização</TableHead>
                 <TableHead className="w-20"></TableHead>
               </TableRow>
             </TableHeader>
@@ -179,6 +197,8 @@ export default function WalletBalance() {
                             onChange={e => setEditForm(f => ({ ...f, lastPaymentDate: e.target.value }))}
                             className="bg-secondary border border-border rounded px-2 py-1 text-sm" />
                         </TableCell>
+                        <TableCell className="text-right font-mono text-sm text-muted-foreground">{calcDaysLeft(editForm.balance ?? 0, editForm.dailySpend ?? 0)}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{formatDateTime(row.updatedAt)}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">
                             <button onClick={saveEdit} className="p-1.5 rounded hover:bg-primary/10 text-primary"><Save className="w-4 h-4" /></button>
@@ -193,6 +213,12 @@ export default function WalletBalance() {
                         <TableCell className="text-right font-mono text-sm">$ {formatCurrency(row.dailySpend)}</TableCell>
                         <TableCell className="text-right font-mono text-sm">$ {formatCurrency(row.lastPaymentAmount)}</TableCell>
                         <TableCell className="text-sm">{row.lastPaymentDate || '—'}</TableCell>
+                        <TableCell className="text-right font-mono text-sm">
+                          <span className={row.dailySpend > 0 && row.balance > 0 && (row.balance / row.dailySpend) <= 3 ? 'text-destructive font-bold' : ''}>
+                            {calcDaysLeft(row.balance, row.dailySpend)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{formatDateTime(row.updatedAt)}</TableCell>
                         <TableCell>
                           <button onClick={() => startEdit(row)} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
                             <Pencil className="w-4 h-4" />
