@@ -153,6 +153,8 @@ export default function WalletBalance() {
                 <TableHead className="font-syne font-bold text-xs uppercase tracking-wider text-right">Valor Diário</TableHead>
                 <TableHead className="font-syne font-bold text-xs uppercase tracking-wider text-right">Valor Último Pgto</TableHead>
                 <TableHead className="font-syne font-bold text-xs uppercase tracking-wider">Data Último Pgto</TableHead>
+                <TableHead className="font-syne font-bold text-xs uppercase tracking-wider text-right">Dias Restantes</TableHead>
+                <TableHead className="font-syne font-bold text-xs uppercase tracking-wider">Última Atualização</TableHead>
                 <TableHead className="w-20"></TableHead>
               </TableRow>
             </TableHeader>
