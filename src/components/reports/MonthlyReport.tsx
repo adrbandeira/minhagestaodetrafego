@@ -112,7 +112,7 @@ function exportClientPDF(client: any, data: ReturnType<typeof getClientData>, mo
   doc.save(`relatorio_${safeName}_${monthLabel.replace(/\s/g, '_')}.pdf`);
 }
 
-export default function MonthlyReportContent() {
+export default function MonthlyReportContent({ clientType }: { clientType: 'agenciado' | 'pessoal' }) {
   const { clients, reviews, tasks, history } = useStore();
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
@@ -128,7 +128,7 @@ export default function MonthlyReportContent() {
     fetchBalances();
   }, []);
 
-  const activeClients = clients.filter(c => c.status === 'ativo');
+  const activeClients = clients.filter(c => c.status === 'ativo' && c.type === clientType);
   const monthStart = `${selectedMonth}-01`;
   const monthEnd = (() => {
     const [y, m] = selectedMonth.split('-').map(Number);

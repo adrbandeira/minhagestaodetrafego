@@ -28,7 +28,7 @@ function getWeekRange(date: Date): { start: string; end: string; label: string }
   return { start, end, label };
 }
 
-export default function WeeklyReport() {
+export default function WeeklyReport({ clientType }: { clientType: 'agenciado' | 'pessoal' }) {
   const { clients, reviews, tasks, notes, history } = useStore();
   const [weekOffset, setWeekOffset] = useState(0);
   const [balances, setBalances] = useState<AdBalance[]>([]);
@@ -41,6 +41,8 @@ export default function WeeklyReport() {
     fetch();
   }, []);
 
+  const clientIds = useMemo(() => new Set(clients.filter(c => c.type === clientType).map(c => c.id)), [clients, clientType]);
+
   const baseDate = useMemo(() => {
     const d = new Date();
     d.setDate(d.getDate() + weekOffset * 7);
@@ -52,13 +54,13 @@ export default function WeeklyReport() {
 
   const inRange = (date: string) => date >= start && date <= end;
 
-  const weekReviews = useMemo(() => reviews.filter(r => inRange(r.date)), [reviews, start, end]);
-  const weekHistory = useMemo(() => history.filter(h => inRange(h.date)), [history, start, end]);
-  const weekTasks = useMemo(() => tasks.filter(t => inRange(t.dueDate)), [tasks, start, end]);
-  const weekNotes = useMemo(() => notes.filter(n => inRange(n.date)), [notes, start, end]);
+  const weekReviews = useMemo(() => reviews.filter(r => inRange(r.date) && clientIds.has(r.clientId)), [reviews, start, end, clientIds]);
+  const weekHistory = useMemo(() => history.filter(h => inRange(h.date) && clientIds.has(h.clientId)), [history, start, end, clientIds]);
+  const weekTasks = useMemo(() => tasks.filter(t => inRange(t.dueDate) && (t.clientId ? clientIds.has(t.clientId) : true)), [tasks, start, end, clientIds]);
+  const weekNotes = useMemo(() => notes.filter(n => inRange(n.date) && clientIds.has(n.clientId)), [notes, start, end, clientIds]);
   const weekBalances = useMemo(() => {
-    return balances.filter(b => b.updated_at && inRange(b.updated_at.split('T')[0]));
-  }, [balances, start, end]);
+    return balances.filter(b => b.updated_at && inRange(b.updated_at.split('T')[0]) && clientIds.has(b.client_id));
+  }, [balances, start, end, clientIds]);
 
   const doneReviews = weekReviews.filter(r => r.done);
   const doneTasks = weekTasks.filter(t => t.done);
