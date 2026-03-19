@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Wallet, TrendingDown, Clock, Save, Pencil } from 'lucide-react';
+import { DatePicker } from '@/components/ui/date-picker';
 
 interface AdBalance {
   id: string;
