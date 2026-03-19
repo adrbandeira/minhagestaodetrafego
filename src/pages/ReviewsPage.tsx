@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useStore } from '@/lib/store';
 import { useNavigate } from 'react-router-dom';
 import { PlatformBadge } from '@/components/Badges';
