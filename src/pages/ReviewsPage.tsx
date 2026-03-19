@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { PlatformBadge } from '@/components/Badges';
 import { CheckCircle2, Circle, CalendarDays } from 'lucide-react';
 import { Client } from '@/lib/types';
+import PinGate from '@/components/PinGate';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from '@/components/ui/dialog';
