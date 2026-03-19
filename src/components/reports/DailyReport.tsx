@@ -51,9 +51,9 @@ export default function DailyReport({ clientType }: { clientType: 'agenciado' | 
   const dayBalances = useMemo(() => {
     return balances.filter(b => {
       if (!b.updated_at) return false;
-      return b.updated_at.split('T')[0] === selectedDate;
+      return b.updated_at.split('T')[0] === selectedDate && clientIds.has(b.client_id);
     });
-  }, [balances, selectedDate]);
+  }, [balances, selectedDate, clientIds]);
 
   const doneReviews = dayReviews.filter(r => r.done);
   const doneTasks = dayTasks.filter(t => t.done);
