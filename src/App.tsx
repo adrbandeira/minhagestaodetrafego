@@ -19,6 +19,7 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import ReportsPage from "@/pages/ReportsPage";
 import WalletBalance from "@/pages/WalletBalance";
+import SLAPage from "@/pages/SLAPage";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
