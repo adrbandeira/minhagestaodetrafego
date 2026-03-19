@@ -197,6 +197,8 @@ export default function WalletBalance() {
                             onChange={e => setEditForm(f => ({ ...f, lastPaymentDate: e.target.value }))}
                             className="bg-secondary border border-border rounded px-2 py-1 text-sm" />
                         </TableCell>
+                        <TableCell className="text-right font-mono text-sm text-muted-foreground">{calcDaysLeft(editForm.balance ?? 0, editForm.dailySpend ?? 0)}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{formatDateTime(row.updatedAt)}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">
                             <button onClick={saveEdit} className="p-1.5 rounded hover:bg-primary/10 text-primary"><Save className="w-4 h-4" /></button>
