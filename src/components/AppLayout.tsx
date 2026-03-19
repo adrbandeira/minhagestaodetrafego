@@ -91,6 +91,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
                     <Link to="/clientes/novo?tipo=agenciado" className="flex items-center gap-2 px-3 py-1.5 text-[12.5px] text-muted-foreground hover:text-primary transition-colors">
                       <Plus className="w-3 h-3" /> Novo cliente
                     </Link>
+                    <Link to="/saldo/agenciado" className="flex items-center gap-2 px-3 py-1.5 text-[12.5px] text-muted-foreground hover:text-primary transition-colors">
+                      <Wallet className="w-3 h-3" /> Saldo da carteira
+                    </Link>
                   </div>
                 )}
               </>
