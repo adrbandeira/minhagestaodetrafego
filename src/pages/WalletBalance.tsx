@@ -19,7 +19,7 @@ interface WalletRow {
   updatedAt: string;
 }
 
-export default function WalletBalance() {
+function WalletBalanceContent() {
   const { type } = useParams<{ type: string }>();
   const { clients } = useStore();
   const [rows, setRows] = useState<WalletRow[]>([]);
