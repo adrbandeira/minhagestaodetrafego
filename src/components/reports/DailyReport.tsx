@@ -16,7 +16,7 @@ interface AdBalance {
 
 const WEEKDAYS = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
 
-export default function DailyReport() {
+export default function DailyReport({ clientType }: { clientType: 'agenciado' | 'pessoal' }) {
   const { clients, reviews, tasks, notes, history } = useStore();
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [balances, setBalances] = useState<AdBalance[]>([]);
@@ -29,6 +29,8 @@ export default function DailyReport() {
     fetch();
   }, []);
 
+  const clientIds = useMemo(() => new Set(clients.filter(c => c.type === clientType).map(c => c.id)), [clients, clientType]);
+
   const navigateDay = (dir: -1 | 1) => {
     const d = new Date(selectedDate + 'T12:00:00');
     d.setDate(d.getDate() + dir);
@@ -39,11 +41,11 @@ export default function DailyReport() {
   const dateObj = new Date(selectedDate + 'T12:00:00');
   const dayLabel = `${WEEKDAYS[dateObj.getDay()]}, ${dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}`;
 
-  // Day's data
-  const dayReviews = useMemo(() => reviews.filter(r => r.date === selectedDate), [reviews, selectedDate]);
-  const dayHistory = useMemo(() => history.filter(h => h.date === selectedDate), [history, selectedDate]);
-  const dayTasks = useMemo(() => tasks.filter(t => t.dueDate === selectedDate), [tasks, selectedDate]);
-  const dayNotes = useMemo(() => notes.filter(n => n.date === selectedDate), [notes, selectedDate]);
+  // Day's data filtered by client type
+  const dayReviews = useMemo(() => reviews.filter(r => r.date === selectedDate && clientIds.has(r.clientId)), [reviews, selectedDate, clientIds]);
+  const dayHistory = useMemo(() => history.filter(h => h.date === selectedDate && clientIds.has(h.clientId)), [history, selectedDate, clientIds]);
+  const dayTasks = useMemo(() => tasks.filter(t => t.dueDate === selectedDate && (t.clientId ? clientIds.has(t.clientId) : true)), [tasks, selectedDate, clientIds]);
+  const dayNotes = useMemo(() => notes.filter(n => n.date === selectedDate && clientIds.has(n.clientId)), [notes, selectedDate, clientIds]);
 
   // Updated balances on this day
   const dayBalances = useMemo(() => {
