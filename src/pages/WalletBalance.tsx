@@ -206,7 +206,7 @@ function WalletBalanceContent() {
                   <div className="min-w-0">
                     <h3 className="text-sm font-bold truncate">{row.clientName}</h3>
                     <div className="mt-1">
-                      <PlatformBadge platform={row.platform} />
+                      <PlatformBadge platform={row.platform as Platform} />
                     </div>
                   </div>
                   {!isEditing && (
