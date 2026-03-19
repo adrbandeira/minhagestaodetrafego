@@ -10,6 +10,9 @@ interface AdBalance {
   daily_spend: number;
   updated_at: string;
   user_id: string | null;
+  payment_method: string;
+  last_payment_amount: number;
+  last_payment_date: string;
 }
 
 export default function ClientAdBalances({ clientId, platforms }: { clientId: string; platforms: string[] }) {
@@ -17,6 +20,9 @@ export default function ClientAdBalances({ clientId, platforms }: { clientId: st
   const [editing, setEditing] = useState<string | null>(null);
   const [editBalance, setEditBalance] = useState('');
   const [editDailySpend, setEditDailySpend] = useState('');
+  const [editPaymentMethod, setEditPaymentMethod] = useState('');
+  const [editLastPaymentAmount, setEditLastPaymentAmount] = useState('');
+  const [editLastPaymentDate, setEditLastPaymentDate] = useState('');
 
   const fetchBalances = useCallback(async () => {
     const { data } = await supabase.from('ad_balances').select('*').eq('client_id', clientId);
@@ -30,17 +36,25 @@ export default function ClientAdBalances({ clientId, platforms }: { clientId: st
   const handleSave = async (platform: string) => {
     const balance = parseFloat(editBalance) || 0;
     const dailySpend = parseFloat(editDailySpend) || 0;
+    const lastPaymentAmount = parseFloat(editLastPaymentAmount) || 0;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     const existing = getBalance(platform);
+    const payload = {
+      balance,
+      daily_spend: dailySpend,
+      payment_method: editPaymentMethod,
+      last_payment_amount: lastPaymentAmount,
+      last_payment_date: editLastPaymentDate,
+      updated_at: new Date().toISOString(),
+    };
+
     if (existing) {
-      await supabase.from('ad_balances').update({
-        balance, daily_spend: dailySpend, updated_at: new Date().toISOString(),
-      }).eq('id', existing.id);
+      await supabase.from('ad_balances').update(payload).eq('id', existing.id);
     } else {
       await supabase.from('ad_balances').insert({
-        client_id: clientId, platform, balance, daily_spend: dailySpend, user_id: user.id,
+        client_id: clientId, platform, user_id: user.id, ...payload,
       });
     }
     setEditing(null);
@@ -51,6 +65,9 @@ export default function ClientAdBalances({ clientId, platforms }: { clientId: st
     const b = getBalance(platform);
     setEditBalance(b?.balance?.toString() || '0');
     setEditDailySpend(b?.daily_spend?.toString() || '0');
+    setEditPaymentMethod(b?.payment_method || '');
+    setEditLastPaymentAmount(b?.last_payment_amount?.toString() || '0');
+    setEditLastPaymentDate(b?.last_payment_date || '');
     setEditing(platform);
   };
 
@@ -102,6 +119,26 @@ export default function ClientAdBalances({ clientId, platforms }: { clientId: st
                     <input type="number" step="0.01" value={editDailySpend} onChange={e => setEditDailySpend(e.target.value)}
                       className="w-full bg-secondary border border-border rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
                   </div>
+                  <div>
+                    <label className="text-[11px] text-muted-foreground block mb-1">Forma de pagamento</label>
+                    <select value={editPaymentMethod} onChange={e => setEditPaymentMethod(e.target.value)}
+                      className="w-full bg-secondary border border-border rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
+                      <option value="">—</option>
+                      <option value="PIX">PIX</option>
+                      <option value="CARTÃO">CARTÃO</option>
+                      <option value="BOLETO">BOLETO</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-muted-foreground block mb-1">Valor último pagamento (R$)</label>
+                    <input type="number" step="0.01" value={editLastPaymentAmount} onChange={e => setEditLastPaymentAmount(e.target.value)}
+                      className="w-full bg-secondary border border-border rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-muted-foreground block mb-1">Data último pagamento</label>
+                    <input type="date" value={editLastPaymentDate} onChange={e => setEditLastPaymentDate(e.target.value)}
+                      className="w-full bg-secondary border border-border rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
+                  </div>
                   <div className="flex gap-2">
                     <button onClick={() => handleSave(platform)} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-[12px] font-medium hover:bg-primary/90 transition-colors">
                       <Save className="w-3 h-3" /> Salvar
@@ -128,6 +165,18 @@ export default function ClientAdBalances({ clientId, platforms }: { clientId: st
                         {daysLeft !== null ? `${daysLeft} dias` : '—'}
                       </p>
                     </div>
+                  </div>
+                  <div className="flex gap-6">
+                    <div>
+                      <p className="text-[11px] text-muted-foreground">Pagamento</p>
+                      <p className="text-sm font-medium">{b?.payment_method || '—'}</p>
+                    </div>
+                    {b?.last_payment_amount ? (
+                      <div>
+                        <p className="text-[11px] text-muted-foreground">Último pgto</p>
+                        <p className="text-sm font-medium">R$ {b.last_payment_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                      </div>
+                    ) : null}
                   </div>
                   {b && (
                     <p className="text-[10px] text-muted-foreground flex items-center gap-1 pt-1">
