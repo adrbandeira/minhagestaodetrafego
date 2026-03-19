@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { Client, Review, Task, Note, ReviewHistory } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -84,24 +84,45 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [history, setHistory] = useState<ReviewHistory[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchAllRef = useRef<() => Promise<void>>();
+
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
+    const [cRes, rRes, tRes, nRes, hRes] = await Promise.all([
+      supabase.from('clients').select('*'),
+      supabase.from('reviews').select('*'),
+      supabase.from('tasks').select('*'),
+      supabase.from('notes').select('*'),
+      supabase.from('review_history').select('*'),
+    ]);
+    if (cRes.data) setClients(cRes.data.map(mapClient));
+    if (rRes.data) setReviews(rRes.data.map(mapReview));
+    if (tRes.data) setTasks(tRes.data.map(mapTask));
+    if (nRes.data) setNotes(nRes.data.map(mapNote));
+    if (hRes.data) setHistory(hRes.data.map(mapHistory));
+    setLoading(false);
+  }, []);
+
+  fetchAllRef.current = fetchAll;
+
   useEffect(() => {
-    async function fetchAll() {
-      setLoading(true);
-      const [cRes, rRes, tRes, nRes, hRes] = await Promise.all([
-        supabase.from('clients').select('*'),
-        supabase.from('reviews').select('*'),
-        supabase.from('tasks').select('*'),
-        supabase.from('notes').select('*'),
-        supabase.from('review_history').select('*'),
-      ]);
-      if (cRes.data) setClients(cRes.data.map(mapClient));
-      if (rRes.data) setReviews(rRes.data.map(mapReview));
-      if (tRes.data) setTasks(tRes.data.map(mapTask));
-      if (nRes.data) setNotes(nRes.data.map(mapNote));
-      if (hRes.data) setHistory(hRes.data.map(mapHistory));
-      setLoading(false);
-    }
-    fetchAll();
+    // Listen to auth state changes and re-fetch data when user logs in
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+        if (session?.user) {
+          fetchAllRef.current?.();
+        }
+      }
+      if (event === 'SIGNED_OUT') {
+        setClients([]);
+        setReviews([]);
+        setTasks([]);
+        setNotes([]);
+        setHistory([]);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const addClient = useCallback(async (c: Omit<Client, 'id' | 'status' | 'lastReviewDate'>) => {
