@@ -115,6 +115,20 @@ export default function WalletBalance() {
   const formatCurrency = (v: number) =>
     v ? v.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '-';
 
+  const calcDaysLeft = (balance: number, daily: number) => {
+    if (!daily || daily <= 0 || !balance) return '—';
+    const days = Math.floor(balance / daily);
+    return `${days} dia${days !== 1 ? 's' : ''}`;
+  };
+
+  const formatDateTime = (iso: string) => {
+    if (!iso) return '—';
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    } catch { return '—'; }
+  };
+
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
