@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/lib/store';
 import { supabase } from '@/integrations/supabase/client';
 import { FileText, ChevronDown, CheckSquare, ClipboardList, Wallet, TrendingDown, Download } from 'lucide-react';
+import PinGate from '@/components/PinGate';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
