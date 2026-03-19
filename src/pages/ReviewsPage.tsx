@@ -2,7 +2,8 @@ import { useState, useMemo, useCallback } from 'react';
 import { useStore } from '@/lib/store';
 import { useNavigate } from 'react-router-dom';
 import { PlatformBadge } from '@/components/Badges';
-import { CheckCircle2, Circle, CalendarDays } from 'lucide-react';
+import { CheckCircle2, Circle, CalendarDays, History } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Client } from '@/lib/types';
 import PinGate from '@/components/PinGate';
 import {
