@@ -89,8 +89,14 @@ export default function ReviewsPage() {
         </button>
       </div>
 
-      {/* Today's reviews */}
-      <div className="mb-8">
+      {tab === 'pessoal' ? (
+        <PinGate>
+          <ReviewContent todayClients={todayClients} todayDay={todayDay} isClientReviewed={isClientReviewed} handleCircleClick={handleCircleClick} navigate={navigate} currentSchedule={currentSchedule} />
+        </PinGate>
+      ) : (
+        <ReviewContent todayClients={todayClients} todayDay={todayDay} isClientReviewed={isClientReviewed} handleCircleClick={handleCircleClick} navigate={navigate} currentSchedule={currentSchedule} />
+      )}
+
         <h2 className="text-sm font-syne font-bold text-primary mb-3 uppercase tracking-wider">
           Revisões de Hoje — {WEEKDAYS[todayDay]}
         </h2>
