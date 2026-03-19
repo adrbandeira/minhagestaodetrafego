@@ -3,6 +3,7 @@ import { Client, Platform } from '@/lib/types';
 import { PlatformBadge, StatusChip, TypeChip } from '@/components/Badges';
 import { useStore } from '@/lib/store';
 import { Pencil, Save, X } from 'lucide-react';
+import { DatePicker } from '@/components/ui/date-picker';
 
 export default function ClientInfo({ client }: { client: Client }) {
   const { updateClient } = useStore();
