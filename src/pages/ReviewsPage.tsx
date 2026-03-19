@@ -193,14 +193,47 @@ export default function ReviewsPage() {
       )}
 
       <Dialog open={!!dialogClient} onOpenChange={(open) => { if (!open) setDialogClient(null); }}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="font-syne">Concluir Revisão — {dialogClient?.name}</DialogTitle>
             <DialogDescription>
-              Descreva o que foi analisado e as ações realizadas nesta revisão. Este registro será salvo no histórico do cliente.
+              Descreva o que foi analisado e as ações realizadas nesta revisão.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-2">
+          <div className="flex-1 overflow-hidden space-y-4 py-2">
+            {/* Previous reviews */}
+            {dialogClient && (() => {
+              const clientHistory = getClientHistory(dialogClient.id);
+              if (clientHistory.length === 0) return null;
+              return (
+                <div className="rounded-lg border border-border bg-secondary/30 overflow-hidden">
+                  <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-secondary/50">
+                    <History className="w-4 h-4 text-primary" />
+                    <span className="text-xs font-syne font-bold uppercase tracking-wider text-muted-foreground">
+                      Últimas revisões ({Math.min(clientHistory.length, 5)})
+                    </span>
+                  </div>
+                  <ScrollArea className="max-h-[200px]">
+                    <div className="divide-y divide-border">
+                      {clientHistory.slice(0, 5).map(h => (
+                        <div key={h.id} className="px-4 py-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[11px] font-medium text-muted-foreground">
+                              {new Date(h.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </span>
+                            <div className="flex gap-1.5">
+                              {h.platforms.map(p => <PlatformBadge key={p} platform={p} />)}
+                            </div>
+                          </div>
+                          <p className="text-xs text-foreground/80 leading-relaxed">{h.summary}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </div>
+              );
+            })()}
+
             <div>
               <label className="text-sm font-medium text-foreground block mb-2">
                 Resumo da revisão <span className="text-destructive">*</span>
@@ -209,7 +242,7 @@ export default function ReviewsPage() {
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
                 placeholder="Ex: Analisei as campanhas de Meta Ads. CTR caiu 0.3%, ajustei público e criativos..."
-                rows={5}
+                rows={4}
                 className="w-full bg-secondary border border-border rounded-lg px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
               />
             </div>
