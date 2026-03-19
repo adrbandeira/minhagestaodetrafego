@@ -237,3 +237,11 @@ function WalletBalanceContent() {
     </div>
   );
 }
+
+export default function WalletBalance() {
+  const { type } = useParams<{ type: string }>();
+  if (type === 'pessoal') {
+    return <PinGate><WalletBalanceContent /></PinGate>;
+  }
+  return <WalletBalanceContent />;
+}
