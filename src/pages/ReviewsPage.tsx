@@ -1,96 +1,152 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useStore } from '@/lib/store';
 import { useNavigate } from 'react-router-dom';
-import { PlatformBadge, PriorityDot } from '@/components/Badges';
-import { Plus, Clock } from 'lucide-react';
-import { Platform, Priority } from '@/lib/types';
+import { PlatformBadge } from '@/components/Badges';
+import { CheckCircle2, Circle, CalendarDays } from 'lucide-react';
+import { Client } from '@/lib/types';
+
+const WEEKDAYS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+const WORK_DAYS = [1, 2, 3, 4, 5]; // seg-sex
+
+function distributeClients(clients: Client[]): Map<number, Client[]> {
+  const schedule = new Map<number, Client[]>();
+  WORK_DAYS.forEach(d => schedule.set(d, []));
+
+  const sorted = [...clients].sort((a, b) => a.name.localeCompare(b.name));
+  sorted.forEach((client, i) => {
+    const dayIndex = WORK_DAYS[i % WORK_DAYS.length];
+    schedule.get(dayIndex)!.push(client);
+  });
+
+  return schedule;
+}
 
 export default function ReviewsPage() {
-  const { getTodayReviews, getClientName, toggleReview, addReview, clients } = useStore();
+  const { clients, reviews, toggleReview, getClientName } = useStore();
   const navigate = useNavigate();
-  const reviews = getTodayReviews();
-  const [showForm, setShowForm] = useState(false);
+  const [tab, setTab] = useState<'agenciado' | 'pessoal'>('agenciado');
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date();
+  const todayDay = today.getDay(); // 0=dom ... 6=sab
+  const todayStr = today.toISOString().split('T')[0];
+
+  const pessoais = useMemo(() => clients.filter(c => c.type === 'pessoal' && c.status === 'ativo'), [clients]);
+  const agenciados = useMemo(() => clients.filter(c => c.type === 'agenciado' && c.status === 'ativo'), [clients]);
+
+  const schedulePessoal = useMemo(() => distributeClients(pessoais), [pessoais]);
+  const scheduleAgenciado = useMemo(() => distributeClients(agenciados), [agenciados]);
+
+  const currentSchedule = tab === 'pessoal' ? schedulePessoal : scheduleAgenciado;
+  const currentClients = tab === 'pessoal' ? pessoais : agenciados;
+
+  const todayClients = currentSchedule.get(todayDay) || [];
+
+  const todayReviews = reviews.filter(r => r.date === todayStr);
+  const getReviewForClient = (clientId: string) => todayReviews.find(r => r.clientId === clientId);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-syne font-bold">Revisões do Dia</h1>
-        <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
-          <Plus className="w-4 h-4" /> Nova Revisão
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <CalendarDays className="w-4 h-4" />
+          <span className="font-medium">{WEEKDAYS[todayDay]}, {today.toLocaleDateString('pt-BR')}</span>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 bg-secondary rounded-lg p-1 mb-6 w-fit">
+        <button
+          onClick={() => setTab('agenciado')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${tab === 'agenciado' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+        >
+          Agenciados ({agenciados.length})
+        </button>
+        <button
+          onClick={() => setTab('pessoal')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${tab === 'pessoal' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+        >
+          Pessoais ({pessoais.length})
         </button>
       </div>
 
-      {showForm && <NewReviewForm clients={clients} onAdd={(r) => { addReview(r); setShowForm(false); }} onCancel={() => setShowForm(false)} />}
-
-      <div className="space-y-2">
-        {reviews.map(r => (
-          <div key={r.id} className="flex items-center gap-3 p-4 rounded-lg bg-card border border-border hover:bg-surface2/50 transition-colors cursor-pointer" onClick={() => navigate(`/cliente/${r.clientId}`)}>
-            <input type="checkbox" checked={r.done} onChange={(e) => { e.stopPropagation(); toggleReview(r.id); }} className="w-4 h-4 rounded accent-primary cursor-pointer" />
-            <span className={`text-sm flex-1 ${r.done ? 'line-through text-muted-foreground' : ''}`}>{getClientName(r.clientId)}</span>
-            <div className="flex items-center gap-2">
-              {r.platforms.map(p => <PlatformBadge key={p} platform={p} />)}
-              <PriorityDot priority={r.priority} />
-              <span className="text-[11px] font-mono text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3" /> {r.time}</span>
-            </div>
+      {/* Today's reviews */}
+      <div className="mb-8">
+        <h2 className="text-sm font-syne font-bold text-primary mb-3 uppercase tracking-wider">
+          Revisões de Hoje — {WEEKDAYS[todayDay]}
+        </h2>
+        {todayClients.length === 0 ? (
+          <p className="text-muted-foreground text-sm">
+            {WORK_DAYS.includes(todayDay) ? 'Nenhum cliente agendado para hoje.' : 'Hoje é fim de semana — sem revisões agendadas.'}
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {todayClients.map(client => {
+              const review = getReviewForClient(client.id);
+              const isDone = review?.done ?? false;
+              return (
+                <div
+                  key={client.id}
+                  className={`flex items-center gap-3 p-4 rounded-lg border transition-colors cursor-pointer ${isDone ? 'bg-muted/30 border-border/50' : 'bg-card border-border hover:bg-secondary/50'}`}
+                  onClick={() => navigate(`/cliente/${client.id}`)}
+                >
+                  {isDone ? (
+                    <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+                  ) : (
+                    <Circle className="w-5 h-5 text-muted-foreground shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <span className={`text-sm font-medium ${isDone ? 'line-through text-muted-foreground' : ''}`}>
+                      {client.name}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground ml-2">{client.segment}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {client.platforms.map(p => <PlatformBadge key={p} platform={p} />)}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        ))}
-        {reviews.length === 0 && <p className="text-muted-foreground text-sm">Nenhuma revisão agendada para hoje.</p>}
+        )}
       </div>
-    </div>
-  );
-}
 
-function NewReviewForm({ clients, onAdd, onCancel }: { clients: any[]; onAdd: (r: any) => void; onCancel: () => void }) {
-  const [clientId, setClientId] = useState('');
-  const [time, setTime] = useState('09:00');
-  const [platforms, setPlatforms] = useState<Platform[]>(['Meta Ads']);
-  const [priority, setPriority] = useState<Priority>('media');
-  const today = new Date().toISOString().split('T')[0];
-
-  const togglePlatform = (p: Platform) => {
-    setPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
-  };
-
-  return (
-    <div className="bg-card border border-border rounded-lg p-5 mb-4 space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="text-[12px] text-muted-foreground block mb-1">Cliente</label>
-          <select value={clientId} onChange={e => setClientId(e.target.value)} className="w-full bg-surface2 border border-border rounded-md px-3 py-2 text-sm text-foreground">
-            <option value="">Selecione...</option>
-            {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="text-[12px] text-muted-foreground block mb-1">Horário</label>
-          <input type="time" value={time} onChange={e => setTime(e.target.value)} className="w-full bg-surface2 border border-border rounded-md px-3 py-2 text-sm text-foreground" />
-        </div>
-      </div>
+      {/* Full week schedule */}
       <div>
-        <label className="text-[12px] text-muted-foreground block mb-1">Plataformas</label>
-        <div className="flex gap-2">
-          {(['Meta Ads', 'Google Ads'] as Platform[]).map(p => (
-            <button key={p} onClick={() => togglePlatform(p)} className={`px-3 py-1.5 rounded text-[12px] font-medium transition-colors ${platforms.includes(p) ? (p === 'Meta Ads' ? 'bg-meta/20 text-meta' : 'bg-google/20 text-google') : 'bg-surface2 text-muted-foreground'}`}>
-              {p}
-            </button>
-          ))}
+        <h2 className="text-sm font-syne font-bold text-muted-foreground mb-4 uppercase tracking-wider">
+          Agenda da Semana
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          {WORK_DAYS.map(day => {
+            const dayClients = currentSchedule.get(day) || [];
+            const isToday = day === todayDay;
+            return (
+              <div
+                key={day}
+                className={`rounded-lg border p-4 ${isToday ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}
+              >
+                <p className={`text-xs font-syne font-bold mb-3 uppercase tracking-wider ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {WEEKDAYS[day]}
+                  <span className="ml-1.5 font-mono text-[10px]">({dayClients.length})</span>
+                </p>
+                <div className="space-y-1.5">
+                  {dayClients.map(c => (
+                    <div
+                      key={c.id}
+                      onClick={() => navigate(`/cliente/${c.id}`)}
+                      className="text-[12px] py-1.5 px-2 rounded hover:bg-secondary/80 cursor-pointer transition-colors truncate"
+                    >
+                      {c.name}
+                    </div>
+                  ))}
+                  {dayClients.length === 0 && (
+                    <p className="text-[11px] text-muted-foreground">—</p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </div>
-      <div>
-        <label className="text-[12px] text-muted-foreground block mb-1">Prioridade</label>
-        <div className="flex gap-2">
-          {(['alta', 'media', 'baixa'] as Priority[]).map(p => (
-            <button key={p} onClick={() => setPriority(p)} className={`px-3 py-1.5 rounded text-[12px] font-medium capitalize transition-colors ${priority === p ? 'bg-primary/20 text-primary' : 'bg-surface2 text-muted-foreground'}`}>
-              {p}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="flex gap-2">
-        <button onClick={() => { if (clientId) onAdd({ clientId, date: today, time, platforms, priority, done: false }); }} className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors">Salvar</button>
-        <button onClick={onCancel} className="px-4 py-2 bg-surface2 text-muted-foreground rounded-md text-sm hover:text-foreground transition-colors">Cancelar</button>
       </div>
     </div>
   );
