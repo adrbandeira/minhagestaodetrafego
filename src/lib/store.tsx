@@ -141,6 +141,31 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (data && !error) setReviews(prev => [...prev, mapReview(data)]);
   }, []);
 
+  const completeReview = useCallback(async (clientId: string, summary: string, platforms: string[]) => {
+    const userId = await getCurrentUserId();
+    if (!userId) return;
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    // 1. Create review marked as done
+    const { data: reviewData } = await supabase.from('reviews').insert({
+      client_id: clientId, date: todayStr, time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      platforms, priority: 'media', done: true, summary, user_id: userId,
+    }).select().single();
+    if (reviewData) setReviews(prev => [...prev, mapReview(reviewData)]);
+
+    // 2. Add to review_history
+    const { data: histData } = await supabase.from('review_history').insert({
+      client_id: clientId, date: todayStr, summary, platforms, tags: [], user_id: userId,
+    }).select().single();
+    if (histData) setHistory(prev => [...prev, mapHistory(histData)]);
+
+    // 3. Update client's last_review_date
+    await supabase.from('clients').update({ last_review_date: todayStr }).eq('id', clientId);
+    setClients(prev => prev.map(c => c.id === clientId ? { ...c, lastReviewDate: todayStr } : c));
+
+    toast({ title: 'Revisão concluída', description: 'A revisão foi registrada no histórico.' });
+  }, []);
+
   const toggleTask = useCallback(async (id: string) => {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
