@@ -181,7 +181,7 @@ function WalletBalanceContent() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map(row => {
+              {displayRows.map(row => {
                 const isEditing = editingId === row.clientId;
                 return (
                   <TableRow key={row.clientId} className="hover:bg-muted/30">
