@@ -97,6 +97,7 @@ function WalletBalanceContent() {
       last_payment_date: editForm.lastPaymentDate ?? '',
       platform: editForm.platform ?? '',
       user_id: user.id,
+      updated_at: new Date().toISOString(),
     };
 
     let error;
