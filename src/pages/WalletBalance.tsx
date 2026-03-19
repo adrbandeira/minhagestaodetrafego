@@ -195,9 +195,7 @@ function WalletBalanceContent() {
                             className="w-28 bg-secondary border border-border rounded px-2 py-1 text-sm text-right" />
                         </TableCell>
                         <TableCell>
-                          <input type="date" value={editForm.lastPaymentDate ?? ''}
-                            onChange={e => setEditForm(f => ({ ...f, lastPaymentDate: e.target.value }))}
-                            className="bg-secondary border border-border rounded px-2 py-1 text-sm" />
+                          <DatePicker value={editForm.lastPaymentDate ?? ''} onChange={v => setEditForm(f => ({ ...f, lastPaymentDate: v }))} className="bg-secondary border-border text-sm h-8" />
                         </TableCell>
                         <TableCell className="text-right font-mono text-sm text-muted-foreground">{calcDaysLeft(editForm.balance ?? 0, editForm.dailySpend ?? 0)}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{formatDateTime(row.updatedAt)}</TableCell>

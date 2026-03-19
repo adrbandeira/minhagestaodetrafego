@@ -81,8 +81,7 @@ export default function ClientInfo({ client }: { client: Client }) {
             className="w-full bg-secondary border border-border rounded-md px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
         </EditRow>
         <EditRow label="Data de Início">
-          <input type="date" value={form.startDate} onChange={e => setForm({ ...form, startDate: e.target.value })}
-            className="w-full bg-secondary border border-border rounded-md px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
+          <DatePicker value={form.startDate} onChange={v => setForm({ ...form, startDate: v })} className="w-full bg-secondary border-border" />
         </EditRow>
         <button onClick={handleSave} className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors">
           <Save className="w-3.5 h-3.5" /> Salvar

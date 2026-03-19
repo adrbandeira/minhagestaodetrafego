@@ -87,7 +87,7 @@ function NewTaskForm({ clients, onAdd, onCancel }: { clients: any[]; onAdd: (t: 
         </div>
         <div>
           <label className="text-[12px] text-muted-foreground block mb-1">Vencimento</label>
-          <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="w-full bg-surface2 border border-border rounded-md px-3 py-2 text-sm text-foreground" />
+          <DatePicker value={dueDate} onChange={setDueDate} className="w-full bg-surface2 border-border" />
         </div>
       </div>
       <div className="flex gap-2">
