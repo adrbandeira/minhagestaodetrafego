@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '@/lib/store';
 import { ClientType, Platform } from '@/lib/types';
+import { DatePicker } from '@/components/ui/date-picker';
 
 export default function NewClient() {
   const navigate = useNavigate();
