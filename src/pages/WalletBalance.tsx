@@ -167,26 +167,38 @@ function WalletBalanceContent() {
           </div>
           <h1 className="text-2xl font-syne font-bold">Saldo da Carteira — {label}</h1>
         </div>
-        {(hasGoogle || hasMeta) && (
+        <div className="flex items-center gap-2">
+          {(hasGoogle || hasMeta) && (
+            <div className="flex gap-1 bg-secondary rounded-lg p-1">
+              <button onClick={() => setPlatformFilter('all')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${platformFilter === 'all' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+                Todos
+              </button>
+              {hasMeta && (
+                <button onClick={() => setPlatformFilter('meta')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${platformFilter === 'meta' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+                  Meta Ads
+                </button>
+              )}
+              {hasGoogle && (
+                <button onClick={() => setPlatformFilter('google')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${platformFilter === 'google' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+                  Google Ads
+                </button>
+              )}
+            </div>
+          )}
           <div className="flex gap-1 bg-secondary rounded-lg p-1">
-            <button onClick={() => setPlatformFilter('all')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${platformFilter === 'all' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-              Todos
+            <button onClick={() => setViewMode('cards')}
+              className={`p-2 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+              <LayoutGrid className="w-4 h-4" />
             </button>
-            {hasMeta && (
-              <button onClick={() => setPlatformFilter('meta')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${platformFilter === 'meta' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-                Meta Ads
-              </button>
-            )}
-            {hasGoogle && (
-              <button onClick={() => setPlatformFilter('google')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${platformFilter === 'google' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-                Google Ads
-              </button>
-            )}
+            <button onClick={() => setViewMode('list')}
+              className={`p-2 rounded-md transition-colors ${viewMode === 'list' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+              <List className="w-4 h-4" />
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
       {loading ? (
