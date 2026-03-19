@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '@/lib/store';
 import { ClientType, Platform } from '@/lib/types';
+import { DatePicker } from '@/components/ui/date-picker';
 
 export default function NewClient() {
   const navigate = useNavigate();
@@ -67,7 +68,7 @@ export default function NewClient() {
         </Field>
 
         <Field label="Data de Início">
-          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full bg-surface2 border border-border rounded-md px-3 py-2 text-sm text-foreground" />
+          <DatePicker value={startDate} onChange={setStartDate} className="w-full bg-surface2 border-border" />
         </Field>
 
         <div className="flex gap-2 pt-2">

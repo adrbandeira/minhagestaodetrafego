@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Wallet, TrendingDown, Clock, Save, Pencil } from 'lucide-react';
+import { DatePicker } from '@/components/ui/date-picker';
 
 interface AdBalance {
   id: string;
@@ -136,8 +137,7 @@ export default function ClientAdBalances({ clientId, platforms }: { clientId: st
                   </div>
                   <div>
                     <label className="text-[11px] text-muted-foreground block mb-1">Data último pagamento</label>
-                    <input type="date" value={editLastPaymentDate} onChange={e => setEditLastPaymentDate(e.target.value)}
-                      className="w-full bg-secondary border border-border rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
+                    <DatePicker value={editLastPaymentDate} onChange={setEditLastPaymentDate} className="w-full bg-secondary border-border" />
                   </div>
                   <div className="flex gap-2">
                     <button onClick={() => handleSave(platform)} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-[12px] font-medium hover:bg-primary/90 transition-colors">

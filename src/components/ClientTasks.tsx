@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Plus, Trash2 } from 'lucide-react';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -39,7 +40,7 @@ export default function ClientTasks({ clientId }: { clientId: string }) {
           </div>
           <div>
             <label className="text-[12px] text-muted-foreground block mb-1">Prazo</label>
-            <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="bg-surface2 border border-border rounded-md px-3 py-2 text-sm text-foreground" />
+            <DatePicker value={dueDate} onChange={setDueDate} className="w-full bg-surface2 border-border" />
           </div>
           <button onClick={handleAdd} className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium">Salvar</button>
         </div>
