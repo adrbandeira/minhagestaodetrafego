@@ -115,7 +115,7 @@ function ReviewContent({
 }
 
 export default function ReviewsPage() {
-  const { clients, reviews, completeReview } = useStore();
+  const { clients, reviews, completeReview, getClientHistory } = useStore();
   const navigate = useNavigate();
   const [tab, setTab] = useState<'agenciado' | 'pessoal'>('agenciado');
   const [dialogClient, setDialogClient] = useState<Client | null>(null);
