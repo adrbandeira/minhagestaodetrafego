@@ -56,6 +56,7 @@ interface StoreContextType {
   updateClient: (c: Client) => void;
   toggleReview: (id: string) => void;
   addReview: (r: Omit<Review, 'id'>) => void;
+  completeReview: (clientId: string, summary: string, platforms: string[]) => Promise<void>;
   toggleTask: (id: string) => void;
   addTask: (t: Omit<Task, 'id'>) => void;
   addNote: (n: Omit<Note, 'id'>) => void;
