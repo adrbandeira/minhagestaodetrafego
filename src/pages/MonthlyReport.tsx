@@ -133,7 +133,7 @@ function exportClientPDF(client: any, data: ReturnType<typeof getClientData>, mo
   doc.save(`relatorio_${safeName}_${monthLabel.replace(/\s/g, '_')}.pdf`);
 }
 
-export default function MonthlyReport() {
+function MonthlyReportContent() {
   const { clients, reviews, tasks, history } = useStore();
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
