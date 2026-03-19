@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useStore } from '@/lib/store';
 import { supabase } from '@/integrations/supabase/client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Wallet, Save, X, Pencil } from 'lucide-react';
