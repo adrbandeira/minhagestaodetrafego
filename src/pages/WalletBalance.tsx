@@ -213,6 +213,12 @@ export default function WalletBalance() {
                         <TableCell className="text-right font-mono text-sm">$ {formatCurrency(row.dailySpend)}</TableCell>
                         <TableCell className="text-right font-mono text-sm">$ {formatCurrency(row.lastPaymentAmount)}</TableCell>
                         <TableCell className="text-sm">{row.lastPaymentDate || '—'}</TableCell>
+                        <TableCell className="text-right font-mono text-sm">
+                          <span className={row.dailySpend > 0 && row.balance > 0 && (row.balance / row.dailySpend) <= 3 ? 'text-destructive font-bold' : ''}>
+                            {calcDaysLeft(row.balance, row.dailySpend)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{formatDateTime(row.updatedAt)}</TableCell>
                         <TableCell>
                           <button onClick={() => startEdit(row)} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
                             <Pencil className="w-4 h-4" />
