@@ -15,6 +15,7 @@ interface WalletRow {
   lastPaymentAmount: number;
   lastPaymentDate: string;
   platform: string;
+  updatedAt: string;
 }
 
 export default function WalletBalance() {
