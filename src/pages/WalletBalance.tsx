@@ -55,6 +55,7 @@ export default function WalletBalance() {
         lastPaymentAmount: b?.last_payment_amount ?? 0,
         lastPaymentDate: b?.last_payment_date ?? '',
         platform: b?.platform ?? c.platforms?.[0] ?? '',
+        updatedAt: b?.updated_at ?? '',
       };
     });
     setRows(mapped);
