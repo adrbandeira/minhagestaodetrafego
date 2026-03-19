@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/lib/store';
 import { supabase } from '@/integrations/supabase/client';
 import { FileText, ChevronDown, CheckSquare, ClipboardList, Wallet, TrendingDown, Download } from 'lucide-react';
+import PinGate from '@/components/PinGate';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -132,7 +133,7 @@ function exportClientPDF(client: any, data: ReturnType<typeof getClientData>, mo
   doc.save(`relatorio_${safeName}_${monthLabel.replace(/\s/g, '_')}.pdf`);
 }
 
-export default function MonthlyReport() {
+function MonthlyReportContent() {
   const { clients, reviews, tasks, history } = useStore();
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
@@ -323,5 +324,13 @@ export default function MonthlyReport() {
         })}
       </div>
     </div>
+  );
+}
+
+export default function MonthlyReport() {
+  return (
+    <PinGate>
+      <MonthlyReportContent />
+    </PinGate>
   );
 }
