@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { StoreProvider } from "@/lib/store";
 import { ThemeProvider } from "@/hooks/useTheme";
 import AppLayout from "@/components/AppLayout";
+import { PessoalPinProvider } from "@/components/PinGate";
 import Dashboard from "@/pages/Dashboard";
 import ReviewsPage from "@/pages/ReviewsPage";
 import TasksPage from "@/pages/TasksPage";
@@ -81,7 +82,9 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <StoreProvider>
-              <AppRoutes />
+              <PessoalPinProvider>
+                <AppRoutes />
+              </PessoalPinProvider>
             </StoreProvider>
           </AuthProvider>
         </BrowserRouter>

@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Wallet, Save, X, Pencil } from 'lucide-react';
+import PinGate from '@/components/PinGate';
 
 interface WalletRow {
   clientId: string;
@@ -18,7 +19,7 @@ interface WalletRow {
   updatedAt: string;
 }
 
-export default function WalletBalance() {
+function WalletBalanceContent() {
   const { type } = useParams<{ type: string }>();
   const { clients } = useStore();
   const [rows, setRows] = useState<WalletRow[]>([]);
@@ -235,4 +236,12 @@ export default function WalletBalance() {
       )}
     </div>
   );
+}
+
+export default function WalletBalance() {
+  const { type } = useParams<{ type: string }>();
+  if (type === 'pessoal') {
+    return <PinGate><WalletBalanceContent /></PinGate>;
+  }
+  return <WalletBalanceContent />;
 }
