@@ -49,6 +49,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             <NavItem to="/revisoes" icon={<ClipboardList className="w-4 h-4" />} label="Revisões do Dia" active={isActive('/revisoes')} badge={pendingReviews > 0 ? pendingReviews : undefined} />
             <NavItem to="/tarefas" icon={<CheckSquare className="w-4 h-4" />} label="Tarefas Gerais" active={isActive('/tarefas')} badge={openTasks > 0 ? openTasks : undefined} />
             <NavItem to="/relatorios" icon={<FileText className="w-4 h-4" />} label="Relatórios" active={isActive('/relatorios')} />
+            <NavItem to="/sla" icon={<BarChart3 className="w-4 h-4" />} label="SLA" active={isActive('/sla')} />
           </div>
 
           <div className="mb-1">
