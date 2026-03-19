@@ -33,6 +33,11 @@ function ReviewContent({
   navigate: (path: string) => void;
   currentSchedule: Map<number, Client[]>;
 }) {
+  const isDayFullyReviewed = useCallback((day: number) => {
+    if (day !== todayDay) return false;
+    const dayClients = currentSchedule.get(day) || [];
+    return dayClients.length > 0 && dayClients.every(c => isClientReviewed(c.id));
+  }, [todayDay, currentSchedule, isClientReviewed]);
   return (
     <>
       <div className="mb-8">
