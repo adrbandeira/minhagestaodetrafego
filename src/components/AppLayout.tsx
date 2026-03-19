@@ -139,8 +139,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto p-8">
-        {children}
+      <main className="flex-1 overflow-y-auto">
+        <div className="flex items-center justify-end px-8 pt-4 pb-0">
+          <NotificationBell />
+        </div>
+        <div className="px-8 pb-8 pt-4">
+          {children}
+        </div>
       </main>
     </div>
   );
