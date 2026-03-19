@@ -326,3 +326,11 @@ function MonthlyReportContent() {
     </div>
   );
 }
+
+export default function MonthlyReport() {
+  return (
+    <PinGate>
+      <MonthlyReportContent />
+    </PinGate>
+  );
+}
