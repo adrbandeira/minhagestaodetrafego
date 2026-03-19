@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useStore } from '@/lib/store';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
-import { Zap, LayoutDashboard, ClipboardList, CheckSquare, User, ChevronDown, ChevronRight, Users, Plus, ArrowRight, Settings, LogOut, Sun, Moon, FileText } from 'lucide-react';
+import { Zap, LayoutDashboard, ClipboardList, CheckSquare, User, ChevronDown, ChevronRight, Users, Plus, ArrowRight, Settings, LogOut, Sun, Moon, FileText, Wallet } from 'lucide-react';
 
 interface AppLayoutProps {
   children: React.ReactNode;
