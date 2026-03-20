@@ -16,9 +16,9 @@ interface AdBalance {
 
 const WEEKDAYS = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
 
-export default function DailyReport({ clientType }: { clientType: 'agenciado' | 'pessoal' }) {
+export default function DailyReport({ clientType, initialDate }: { clientType: 'agenciado' | 'pessoal'; initialDate?: string }) {
   const { clients, reviews, tasks, notes, history } = useStore();
-  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(() => initialDate || new Date().toISOString().split('T')[0]);
   const [balances, setBalances] = useState<AdBalance[]>([]);
 
   useEffect(() => {
