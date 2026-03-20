@@ -210,24 +210,59 @@ export default function AdminPanel() {
         ) : (
           <div className="space-y-2">
             {users.map(u => (
-              <div key={u.user_id} className="flex items-center justify-between bg-background border border-border rounded-lg px-4 py-3">
-                <div>
-                  <p className="text-sm font-medium text-foreground">{u.name || 'Sem nome'}</p>
-                  <p className="text-xs text-muted-foreground">{u.email}</p>
-                  <div className="flex gap-1.5 mt-1">
-                    {u.has_pessoal && <Badge variant="secondary" className="text-[10px]">Pessoal</Badge>}
-                    {u.has_agenciado && <Badge variant="secondary" className="text-[10px]">Agenciado</Badge>}
-                    {u.isAdmin && <Badge className="text-[10px] bg-primary/20 text-primary border-0">Admin</Badge>}
+              <div key={u.user_id} className="bg-background border border-border rounded-lg px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{u.name || 'Sem nome'}</p>
+                    <p className="text-xs text-muted-foreground">{u.email}</p>
+                    {editingUserId !== u.user_id && (
+                      <div className="flex gap-1.5 mt-1">
+                        {u.has_pessoal && <Badge variant="secondary" className="text-[10px]">Pessoal</Badge>}
+                        {u.has_agenciado && <Badge variant="secondary" className="text-[10px]">Agenciado</Badge>}
+                        {u.isAdmin && <Badge className="text-[10px] bg-primary/20 text-primary border-0">Admin</Badge>}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {editingUserId === u.user_id ? (
+                      <>
+                        <Button variant="ghost" size="sm" onClick={() => savePermissions(u.user_id)} title="Salvar">
+                          <Save className="w-4 h-4 text-primary" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={cancelEditing} title="Cancelar">
+                          <X className="w-4 h-4 text-muted-foreground" />
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button variant="ghost" size="sm" onClick={() => startEditing(u)} title="Editar permissões">
+                          <Pencil className="w-4 h-4 text-muted-foreground" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleAdmin(u.user_id, u.isAdmin)}
+                          title={u.isAdmin ? 'Remover admin' : 'Tornar admin'}
+                        >
+                          <Shield className={`w-4 h-4 ${u.isAdmin ? 'text-primary' : 'text-muted-foreground'}`} />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => toggleAdmin(u.user_id, u.isAdmin)}
-                  title={u.isAdmin ? 'Remover admin' : 'Tornar admin'}
-                >
-                  <Shield className={`w-4 h-4 ${u.isAdmin ? 'text-primary' : 'text-muted-foreground'}`} />
-                </Button>
+
+                {editingUserId === u.user_id && (
+                  <div className="mt-3 pt-3 border-t border-border space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Clientes Pessoais</span>
+                      <Switch checked={editPessoal} onCheckedChange={setEditPessoal} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Clientes Agenciados</span>
+                      <Switch checked={editAgenciado} onCheckedChange={setEditAgenciado} />
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
