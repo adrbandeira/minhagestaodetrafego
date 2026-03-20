@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FileText } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import PinGate from '@/components/PinGate';
