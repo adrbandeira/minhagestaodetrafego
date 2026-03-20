@@ -49,13 +49,13 @@ function ReportsContent() {
 
       {clientType === 'pessoal' ? (
         <PinGate>
-          {tab === 'diario' && <DailyReport clientType="pessoal" />}
+          {tab === 'diario' && <DailyReport clientType="pessoal" initialDate={initialDate} />}
           {tab === 'semanal' && <WeeklyReport clientType="pessoal" />}
           {tab === 'mensal' && <MonthlyReportContent clientType="pessoal" />}
         </PinGate>
       ) : (
         <>
-          {tab === 'diario' && <DailyReport clientType="agenciado" />}
+          {tab === 'diario' && <DailyReport clientType="agenciado" initialDate={initialDate} />}
           {tab === 'semanal' && <WeeklyReport clientType="agenciado" />}
           {tab === 'mensal' && <MonthlyReportContent clientType="agenciado" />}
         </>
