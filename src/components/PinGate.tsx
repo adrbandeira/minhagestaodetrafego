@@ -40,7 +40,7 @@ export default function PinGate({ children }: { children: React.ReactNode }) {
         </div>
         <h2 className="font-syne font-bold text-lg mb-2">Área Protegida</h2>
         <p className="text-sm text-muted-foreground mb-6">Digite o PIN para acessar os clientes pessoais.</p>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-stretch">
           <input
             type="password"
             maxLength={4}
@@ -48,9 +48,9 @@ export default function PinGate({ children }: { children: React.ReactNode }) {
             onChange={e => { setPin(e.target.value); setPinError(false); }}
             onKeyDown={e => e.key === 'Enter' && handleUnlock()}
             placeholder="PIN"
-            className={`flex-1 bg-secondary border rounded-md px-4 py-2.5 text-center text-lg font-mono tracking-[0.5em] focus:outline-none focus:ring-1 focus:ring-primary ${pinError ? 'border-destructive' : 'border-border'}`}
+            className={`flex-1 min-w-0 bg-secondary border rounded-md px-4 py-2.5 text-center text-lg font-mono tracking-[0.5em] focus:outline-none focus:ring-1 focus:ring-primary ${pinError ? 'border-destructive' : 'border-border'}`}
           />
-          <button onClick={handleUnlock} className="px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors">
+          <button onClick={handleUnlock} className="shrink-0 px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors">
             Entrar
           </button>
         </div>
