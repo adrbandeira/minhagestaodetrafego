@@ -146,6 +146,17 @@ function SLAContent({ clientType }: { clientType: ClientTypeTab }) {
         />
       </div>
 
+      {/* Evolution Chart */}
+      <div className="mb-8">
+        <SLAEvolutionChart
+          reviews={reviews}
+          tasks={tasks}
+          periodStart={periodStart}
+          today={today}
+          clientIds={clientIds}
+        />
+      </div>
+
       {/* Client breakdown */}
       <h2 className="text-sm font-syne font-bold uppercase tracking-wider text-muted-foreground mb-4">
         Detalhamento por Cliente
