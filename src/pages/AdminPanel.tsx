@@ -108,6 +108,34 @@ export default function AdminPanel() {
     toast.success('Permissão atualizada!');
   };
 
+  const startEditing = (u: UserProfile) => {
+    setEditingUserId(u.user_id);
+    setEditPessoal(u.has_pessoal);
+    setEditAgenciado(u.has_agenciado);
+  };
+
+  const cancelEditing = () => {
+    setEditingUserId(null);
+  };
+
+  const savePermissions = async (userId: string) => {
+    if (!editPessoal && !editAgenciado) {
+      toast.error('O usuário precisa ter pelo menos um tipo de cliente.');
+      return;
+    }
+    const { error } = await supabase
+      .from('profiles')
+      .update({ has_pessoal: editPessoal, has_agenciado: editAgenciado })
+      .eq('user_id', userId);
+    if (error) {
+      toast.error('Erro ao salvar permissões.');
+    } else {
+      toast.success('Permissões atualizadas!');
+      setEditingUserId(null);
+      await loadData();
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
