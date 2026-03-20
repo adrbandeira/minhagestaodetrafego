@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FileText } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import PinGate from '@/components/PinGate';
@@ -11,6 +12,8 @@ type ClientTypeTab = 'agenciado' | 'pessoal';
 
 function ReportsContent() {
   const { clients } = useStore();
+  const [searchParams] = useSearchParams();
+  const initialDate = searchParams.get('date') || undefined;
   const [tab, setTab] = useState<ReportTab>('diario');
   const [clientType, setClientType] = useState<ClientTypeTab>('agenciado');
 
@@ -46,13 +49,13 @@ function ReportsContent() {
 
       {clientType === 'pessoal' ? (
         <PinGate>
-          {tab === 'diario' && <DailyReport clientType="pessoal" />}
+          {tab === 'diario' && <DailyReport clientType="pessoal" initialDate={initialDate} />}
           {tab === 'semanal' && <WeeklyReport clientType="pessoal" />}
           {tab === 'mensal' && <MonthlyReportContent clientType="pessoal" />}
         </PinGate>
       ) : (
         <>
-          {tab === 'diario' && <DailyReport clientType="agenciado" />}
+          {tab === 'diario' && <DailyReport clientType="agenciado" initialDate={initialDate} />}
           {tab === 'semanal' && <WeeklyReport clientType="agenciado" />}
           {tab === 'mensal' && <MonthlyReportContent clientType="agenciado" />}
         </>

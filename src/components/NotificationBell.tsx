@@ -137,9 +137,9 @@ export default function NotificationBell() {
                     className={`px-4 py-3 cursor-pointer transition-colors hover:bg-secondary/50 ${!n.read ? 'bg-primary/5' : ''}`}
                     onClick={() => {
                       markAsRead(n.id);
-                      if (n.type === 'daily_report') {
+                      if (n.type === 'daily_report' && n.data?.date) {
                         setOpen(false);
-                        navigate('/revisoes');
+                        navigate(`/relatorios?date=${n.data.date}`);
                       }
                     }}
                   >
