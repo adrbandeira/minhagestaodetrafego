@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { TrendingUp, Clock, CheckCircle2, AlertTriangle, BarChart3 } from 'lucide-react';
 import PinGate from '@/components/PinGate';
+import SLAEvolutionChart from '@/components/SLAEvolutionChart';
 
 type ClientTypeTab = 'agenciado' | 'pessoal';
 
