@@ -12,6 +12,8 @@ type ClientTypeTab = 'agenciado' | 'pessoal';
 
 function ReportsContent() {
   const { clients } = useStore();
+  const [searchParams] = useSearchParams();
+  const initialDate = searchParams.get('date') || undefined;
   const [tab, setTab] = useState<ReportTab>('diario');
   const [clientType, setClientType] = useState<ClientTypeTab>('agenciado');
 
