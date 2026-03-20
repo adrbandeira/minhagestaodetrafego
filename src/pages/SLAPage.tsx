@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { TrendingUp, Clock, CheckCircle2, AlertTriangle, BarChart3 } from 'lucide-react';
 import PinGate from '@/components/PinGate';
+import SLAEvolutionChart from '@/components/SLAEvolutionChart';
 
 type ClientTypeTab = 'agenciado' | 'pessoal';
 
@@ -142,6 +143,17 @@ function SLAContent({ clientType }: { clientType: ClientTypeTab }) {
           icon={<AlertTriangle className="w-5 h-5" />}
           good={overdueTasks === 0}
           warn={overdueTasks > 0 && overdueTasks <= 3}
+        />
+      </div>
+
+      {/* Evolution Chart */}
+      <div className="mb-8">
+        <SLAEvolutionChart
+          reviews={reviews}
+          tasks={tasks}
+          periodStart={periodStart}
+          today={today}
+          clientIds={clientIds}
         />
       </div>
 
