@@ -135,7 +135,13 @@ export default function NotificationBell() {
                   <div
                     key={n.id}
                     className={`px-4 py-3 cursor-pointer transition-colors hover:bg-secondary/50 ${!n.read ? 'bg-primary/5' : ''}`}
-                    onClick={() => markAsRead(n.id)}
+                    onClick={() => {
+                      markAsRead(n.id);
+                      if (n.type === 'daily_report') {
+                        setOpen(false);
+                        navigate('/revisoes');
+                      }
+                    }}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`mt-0.5 p-1.5 rounded-lg ${n.type === 'daily_report' ? 'bg-primary/10' : 'bg-secondary'}`}>
