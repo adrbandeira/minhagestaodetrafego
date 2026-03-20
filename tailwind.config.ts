@@ -12,9 +12,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        syne: ["Syne", "sans-serif"],
-        sans: ["DM Sans", "sans-serif"],
-        mono: ["DM Mono", "monospace"],
+        sans: ["Inter", "sans-serif"],
+        serif: ["Source Serif 4", "serif"],
+        mono: ["JetBrains Mono", "monospace"],
+        syne: ["Inter", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -56,6 +57,13 @@ export default {
         danger: "hsl(var(--danger))",
         meta: "hsl(var(--meta))",
         google: "hsl(var(--google))",
+        chart: {
+          "1": "hsl(var(--chart-1))",
+          "2": "hsl(var(--chart-2))",
+          "3": "hsl(var(--chart-3))",
+          "4": "hsl(var(--chart-4))",
+          "5": "hsl(var(--chart-5))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
