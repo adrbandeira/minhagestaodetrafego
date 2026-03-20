@@ -88,12 +88,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
+    const userId = await getCurrentUserId();
+    if (!userId) { setLoading(false); return; }
     const [cRes, rRes, tRes, nRes, hRes] = await Promise.all([
-      supabase.from('clients').select('*'),
-      supabase.from('reviews').select('*'),
-      supabase.from('tasks').select('*'),
-      supabase.from('notes').select('*'),
-      supabase.from('review_history').select('*'),
+      supabase.from('clients').select('*').eq('user_id', userId),
+      supabase.from('reviews').select('*').eq('user_id', userId),
+      supabase.from('tasks').select('*').eq('user_id', userId),
+      supabase.from('notes').select('*').eq('user_id', userId),
+      supabase.from('review_history').select('*').eq('user_id', userId),
     ]);
     if (cRes.data) setClients(cRes.data.map(mapClient));
     if (rRes.data) setReviews(rRes.data.map(mapReview));
