@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bell, X, CheckCircle2, FileText, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,6 +17,7 @@ interface Notification {
 
 export default function NotificationBell() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -133,7 +135,13 @@ export default function NotificationBell() {
                   <div
                     key={n.id}
                     className={`px-4 py-3 cursor-pointer transition-colors hover:bg-secondary/50 ${!n.read ? 'bg-primary/5' : ''}`}
-                    onClick={() => markAsRead(n.id)}
+                    onClick={() => {
+                      markAsRead(n.id);
+                      if (n.type === 'daily_report') {
+                        setOpen(false);
+                        navigate('/revisoes');
+                      }
+                    }}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`mt-0.5 p-1.5 rounded-lg ${n.type === 'daily_report' ? 'bg-primary/10' : 'bg-secondary'}`}>
