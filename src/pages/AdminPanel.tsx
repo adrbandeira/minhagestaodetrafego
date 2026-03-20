@@ -34,6 +34,9 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editPessoal, setEditPessoal] = useState(false);
+  const [editAgenciado, setEditAgenciado] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
