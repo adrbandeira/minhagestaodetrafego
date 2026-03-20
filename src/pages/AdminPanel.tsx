@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Plus, Loader2, Users, Link2, Shield, Check } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Copy, Plus, Loader2, Users, Link2, Shield, Check, Pencil, X, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface UserProfile {
