@@ -15,19 +15,19 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, serviceKey)
 
-    // Get yesterday's date (skip weekends)
+    // Get yesterday's date (skip if yesterday was weekend)
     const now = new Date()
-    const today = now.getDay() // 0=Sun, 1=Mon...
+    const yesterday = new Date(now)
+    yesterday.setDate(now.getDate() - 1)
+    const yesterdayDay = yesterday.getDay() // 0=Sun, 6=Sat
     
-    // If today is Sunday(0) or Monday(1), skip (no report for Sat/Sun)
-    if (today === 0 || today === 1) {
-      return new Response(JSON.stringify({ message: 'Weekend - no report generated' }), {
+    // If yesterday was Saturday(6) or Sunday(0), skip (no report for weekends)
+    if (yesterdayDay === 0 || yesterdayDay === 6) {
+      return new Response(JSON.stringify({ message: 'Yesterday was weekend - no report generated' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    const yesterday = new Date(now)
-    yesterday.setDate(now.getDate() - 1)
     const yesterdayStr = yesterday.toISOString().split('T')[0]
     const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
     const dayLabel = dayNames[yesterday.getDay()]
