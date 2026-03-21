@@ -28,8 +28,6 @@ Deno.serve(async (req) => {
       })
     }
 
-    const yesterday = new Date(now)
-    yesterday.setDate(now.getDate() - 1)
     const yesterdayStr = yesterday.toISOString().split('T')[0]
     const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
     const dayLabel = dayNames[yesterday.getDay()]
