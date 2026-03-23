@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/lib/store';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, ClipboardList, CheckSquare, AlertTriangle, Wallet } from 'lucide-react';
+import PinGate from '@/components/PinGate';
 
 interface AdBalance {
   client_id: string;
@@ -10,9 +11,12 @@ interface AdBalance {
   daily_spend: number;
 }
 
+type DashboardTab = 'geral' | 'agenciado' | 'pessoal';
+
 export default function Dashboard() {
   const { clients, getTodayReviews, getOpenTasks, getClientsWithoutRecentReview } = useStore();
   const [balances, setBalances] = useState<AdBalance[]>([]);
+  const [tab, setTab] = useState<DashboardTab>('geral');
 
   useEffect(() => {
     async function fetch() {
@@ -22,30 +26,106 @@ export default function Dashboard() {
     fetch();
   }, []);
 
-  const todayReviews = getTodayReviews();
+  const tabs: { key: DashboardTab; label: string }[] = [
+    { key: 'geral', label: 'Geral' },
+    { key: 'agenciado', label: 'Agenciados' },
+    { key: 'pessoal', label: 'Pessoais' },
+  ];
+
+  const content = tab === 'pessoal' ? (
+    <PinGate>
+      <DashboardContent tab={tab} clients={clients} balances={balances} getTodayReviews={getTodayReviews} getOpenTasks={getOpenTasks} getClientsWithoutRecentReview={getClientsWithoutRecentReview} />
+    </PinGate>
+  ) : (
+    <DashboardContent tab={tab} clients={clients} balances={balances} getTodayReviews={getTodayReviews} getOpenTasks={getOpenTasks} getClientsWithoutRecentReview={getClientsWithoutRecentReview} />
+  );
+
+  return (
+    <div>
+      <h1 className="text-2xl font-syne font-bold mb-4">Dashboard</h1>
+
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6">
+        {tabs.map(t => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              tab === t.key
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-card border border-border text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {content}
+    </div>
+  );
+}
+
+interface DashboardContentProps {
+  tab: DashboardTab;
+  clients: ReturnType<typeof useStore>['clients'];
+  balances: AdBalance[];
+  getTodayReviews: ReturnType<typeof useStore>['getTodayReviews'];
+  getOpenTasks: ReturnType<typeof useStore>['getOpenTasks'];
+  getClientsWithoutRecentReview: ReturnType<typeof useStore>['getClientsWithoutRecentReview'];
+}
+
+function DashboardContent({ tab, clients, balances, getTodayReviews, getOpenTasks, getClientsWithoutRecentReview }: DashboardContentProps) {
+  const isFiltered = tab !== 'geral';
+  
+  const filteredClients = useMemo(() => {
+    if (!isFiltered) return clients;
+    return clients.filter(c => c.type === tab);
+  }, [clients, tab, isFiltered]);
+
+  const filteredClientIds = useMemo(() => new Set(filteredClients.map(c => c.id)), [filteredClients]);
+
+  const todayReviews = useMemo(() => {
+    const all = getTodayReviews();
+    if (!isFiltered) return all;
+    return all.filter(r => filteredClientIds.has(r.clientId));
+  }, [getTodayReviews, isFiltered, filteredClientIds]);
+
+  const openTasks = useMemo(() => {
+    const all = getOpenTasks();
+    if (!isFiltered) return all;
+    return all.filter(t => t.clientId && filteredClientIds.has(t.clientId));
+  }, [getOpenTasks, isFiltered, filteredClientIds]);
+
+  const alertClients = useMemo(() => {
+    const all = getClientsWithoutRecentReview();
+    if (!isFiltered) return all;
+    return all.filter(c => c.type === tab);
+  }, [getClientsWithoutRecentReview, isFiltered, tab]);
+
+  const activeClients = filteredClients.filter(c => c.status === 'ativo').length;
   const doneReviews = todayReviews.filter(r => r.done).length;
-  const openTasks = getOpenTasks();
-  const alertClients = getClientsWithoutRecentReview();
-  const activeClients = clients.filter(c => c.status === 'ativo').length;
 
   const today = new Date().toISOString().split('T')[0];
   const tasksDueToday = openTasks.filter(t => t.dueDate === today);
 
-  // Clientes com verba acabando (<=3 dias)
-  const lowBudgetAlerts = balances
-    .filter(b => b.daily_spend > 0 && Math.floor(b.balance / b.daily_spend) <= 3)
-    .map(b => {
-      const client = clients.find(c => c.id === b.client_id);
-      const daysLeft = Math.floor(b.balance / b.daily_spend);
-      return { ...b, clientName: client?.name || 'Desconhecido', daysLeft };
-    });
+  const lowBudgetAlerts = useMemo(() => {
+    const filtered = isFiltered
+      ? balances.filter(b => filteredClientIds.has(b.client_id))
+      : balances;
+    return filtered
+      .filter(b => b.daily_spend > 0 && Math.floor(b.balance / b.daily_spend) <= 3)
+      .map(b => {
+        const client = clients.find(c => c.id === b.client_id);
+        const daysLeft = Math.floor(b.balance / b.daily_spend);
+        return { ...b, clientName: client?.name || 'Desconhecido', daysLeft };
+      });
+  }, [balances, isFiltered, filteredClientIds, clients]);
 
   const hasAlerts = alertClients.length > 0 || tasksDueToday.length > 0 || lowBudgetAlerts.length > 0;
 
   return (
-    <div>
-      <h1 className="text-2xl font-syne font-bold mb-6">Dashboard</h1>
-
+    <>
       {/* Status Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard icon={<Users className="w-5 h-5 text-primary" />} label="Clientes Ativos" value={activeClients} />
@@ -89,10 +169,22 @@ export default function Dashboard() {
           </h2>
           <div className="space-y-2">
             {alertClients.length > 0 && (
-              <div className="flex items-center gap-3 p-3 rounded-md bg-warn/5 border border-warn/20">
-                <AlertTriangle className="w-4 h-4 text-warn flex-shrink-0" />
-                <span className="text-sm flex-1">{alertClients.length} cliente{alertClients.length > 1 ? 's' : ''} sem revisão há mais de 3 dias</span>
-              </div>
+              isFiltered ? (
+                /* Show individual client names in filtered view */
+                alertClients.map(client => (
+                  <div key={client.id} className="flex items-center gap-3 p-3 rounded-md bg-warn/5 border border-warn/20">
+                    <AlertTriangle className="w-4 h-4 text-warn flex-shrink-0" />
+                    <span className="text-sm flex-1">
+                      <span className="font-medium">{client.name}</span> sem revisão há mais de 3 dias
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center gap-3 p-3 rounded-md bg-warn/5 border border-warn/20">
+                  <AlertTriangle className="w-4 h-4 text-warn flex-shrink-0" />
+                  <span className="text-sm flex-1">{alertClients.length} cliente{alertClients.length > 1 ? 's' : ''} sem revisão há mais de 3 dias</span>
+                </div>
+              )
             )}
             {tasksDueToday.length > 0 && (
               <div className="flex items-center gap-3 p-3 rounded-md bg-danger/5 border border-danger/20">
@@ -104,6 +196,7 @@ export default function Dashboard() {
               <div key={`${alert.client_id}-${alert.platform}`} className="flex items-center gap-3 p-3 rounded-md bg-danger/5 border border-danger/20">
                 <Wallet className="w-4 h-4 text-danger flex-shrink-0" />
                 <span className="text-sm flex-1">
+                  {isFiltered && <><span className="font-medium">{alert.clientName}</span> — </>}
                   Verba de <span className="font-medium">{alert.platform}</span> acaba em <span className="font-bold text-danger">{alert.daysLeft} dia{alert.daysLeft !== 1 ? 's' : ''}</span>
                 </span>
               </div>
@@ -114,7 +207,7 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
