@@ -78,6 +78,7 @@ interface DashboardContentProps {
 }
 
 function DashboardContent({ tab, clients, balances, getTodayReviews, getOpenTasks, getClientsWithoutRecentReview }: DashboardContentProps) {
+  const navigate = useNavigate();
   const isFiltered = tab !== 'geral';
   
   const filteredClients = useMemo(() => {
