@@ -33,7 +33,7 @@ export default function Dashboard() {
   ];
 
   const content = tab === 'pessoal' ? (
-    <PinGate type="pessoal">
+    <PinGate>
       <DashboardContent tab={tab} clients={clients} balances={balances} getTodayReviews={getTodayReviews} getOpenTasks={getOpenTasks} getClientsWithoutRecentReview={getClientsWithoutRecentReview} />
     </PinGate>
   ) : (
