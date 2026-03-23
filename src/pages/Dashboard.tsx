@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, ClipboardList, CheckSquare, AlertTriangle, Wallet } from 'lucide-react';
@@ -170,15 +171,7 @@ function DashboardContent({ tab, clients, balances, getTodayReviews, getOpenTask
           <div className="space-y-2">
             {alertClients.length > 0 && (
               isFiltered ? (
-                /* Show individual client names in filtered view */
-                alertClients.map(client => (
-                  <div key={client.id} className="flex items-center gap-3 p-3 rounded-md bg-warn/5 border border-warn/20">
-                    <AlertTriangle className="w-4 h-4 text-warn flex-shrink-0" />
-                    <span className="text-sm flex-1">
-                      <span className="font-medium">{client.name}</span> sem revisão há mais de 3 dias
-                    </span>
-                  </div>
-                ))
+                <ReviewAlertsList clients={alertClients} />
               ) : (
                 <div className="flex items-center gap-3 p-3 rounded-md bg-warn/5 border border-warn/20">
                   <AlertTriangle className="w-4 h-4 text-warn flex-shrink-0" />
@@ -216,6 +209,38 @@ function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label
     <div className={`bg-card rounded-lg border p-4 ${accent ? 'border-danger/30' : 'border-border'}`}>
       <div className="flex items-center gap-3 mb-2">{icon}<span className="text-[12px] text-muted-foreground">{label}</span></div>
       <p className={`text-2xl font-syne font-bold ${accent ? 'text-danger' : ''}`}>{value}</p>
+    </div>
+  );
+}
+
+function ReviewAlertsList({ clients }: { clients: { id: string; name: string }[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const MAX_VISIBLE = 3;
+  const hasMore = clients.length > MAX_VISIBLE;
+  const visible = expanded ? clients : clients.slice(0, MAX_VISIBLE);
+
+  return (
+    <div className="space-y-2">
+      {visible.map(client => (
+        <div key={client.id} className="flex items-center gap-3 p-3 rounded-md bg-warn/5 border border-warn/20">
+          <AlertTriangle className="w-4 h-4 text-warn flex-shrink-0" />
+          <span className="text-sm flex-1">
+            <span className="font-medium">{client.name}</span> sem revisão há mais de 3 dias
+          </span>
+        </div>
+      ))}
+      {hasMore && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors w-full justify-center py-1.5"
+        >
+          {expanded ? (
+            <>Mostrar menos <ChevronUp className="w-3.5 h-3.5" /></>
+          ) : (
+            <>+ {clients.length - MAX_VISIBLE} cliente{clients.length - MAX_VISIBLE > 1 ? 's' : ''} sem revisão <ChevronDown className="w-3.5 h-3.5" /></>
+          )}
+        </button>
+      )}
     </div>
   );
 }
