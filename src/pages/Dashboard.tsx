@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/lib/store';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, ClipboardList, CheckSquare, AlertTriangle, Wallet } from 'lucide-react';
@@ -77,6 +78,7 @@ interface DashboardContentProps {
 }
 
 function DashboardContent({ tab, clients, balances, getTodayReviews, getOpenTasks, getClientsWithoutRecentReview }: DashboardContentProps) {
+  const navigate = useNavigate();
   const isFiltered = tab !== 'geral';
   
   const filteredClients = useMemo(() => {
@@ -186,7 +188,11 @@ function DashboardContent({ tab, clients, balances, getTodayReviews, getOpenTask
               </div>
             )}
             {lowBudgetAlerts.map(alert => (
-              <div key={`${alert.client_id}-${alert.platform}`} className="flex items-center gap-3 p-3 rounded-md bg-danger/5 border border-danger/20">
+              <div
+                key={`${alert.client_id}-${alert.platform}`}
+                onClick={() => navigate(`/clientes/${alert.client_id}`)}
+                className="flex items-center gap-3 p-3 rounded-md bg-danger/5 border border-danger/20 cursor-pointer hover:bg-danger/10 transition-colors"
+              >
                 <Wallet className="w-4 h-4 text-danger flex-shrink-0" />
                 <span className="text-sm flex-1">
                   {isFiltered && <><span className="font-medium">{alert.clientName}</span> — </>}
@@ -214,6 +220,7 @@ function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label
 }
 
 function ReviewAlertsList({ clients }: { clients: { id: string; name: string }[] }) {
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const MAX_VISIBLE = 3;
   const hasMore = clients.length > MAX_VISIBLE;
@@ -222,7 +229,11 @@ function ReviewAlertsList({ clients }: { clients: { id: string; name: string }[]
   return (
     <div className="space-y-2">
       {visible.map(client => (
-        <div key={client.id} className="flex items-center gap-3 p-3 rounded-md bg-warn/5 border border-warn/20">
+        <div
+          key={client.id}
+          onClick={() => navigate(`/clientes/${client.id}`)}
+          className="flex items-center gap-3 p-3 rounded-md bg-warn/5 border border-warn/20 cursor-pointer hover:bg-warn/10 transition-colors"
+        >
           <AlertTriangle className="w-4 h-4 text-warn flex-shrink-0" />
           <span className="text-sm flex-1">
             <span className="font-medium">{client.name}</span> sem revisão há mais de 3 dias
