@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/lib/store';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, ClipboardList, CheckSquare, AlertTriangle, Wallet } from 'lucide-react';
