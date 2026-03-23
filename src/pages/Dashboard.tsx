@@ -220,6 +220,7 @@ function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label
 }
 
 function ReviewAlertsList({ clients }: { clients: { id: string; name: string }[] }) {
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const MAX_VISIBLE = 3;
   const hasMore = clients.length > MAX_VISIBLE;
