@@ -227,7 +227,11 @@ function ReviewAlertsList({ clients }: { clients: { id: string; name: string }[]
   return (
     <div className="space-y-2">
       {visible.map(client => (
-        <div key={client.id} className="flex items-center gap-3 p-3 rounded-md bg-warn/5 border border-warn/20">
+        <div
+          key={client.id}
+          onClick={() => navigate(`/clientes/${client.id}`)}
+          className="flex items-center gap-3 p-3 rounded-md bg-warn/5 border border-warn/20 cursor-pointer hover:bg-warn/10 transition-colors"
+        >
           <AlertTriangle className="w-4 h-4 text-warn flex-shrink-0" />
           <span className="text-sm flex-1">
             <span className="font-medium">{client.name}</span> sem revisão há mais de 3 dias
