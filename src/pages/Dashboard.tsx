@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/lib/store';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, ClipboardList, CheckSquare, AlertTriangle, Wallet } from 'lucide-react';
-import { PinGate } from '@/components/PinGate';
+import PinGate from '@/components/PinGate';
 
 interface AdBalance {
   client_id: string;
