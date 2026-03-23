@@ -187,7 +187,11 @@ function DashboardContent({ tab, clients, balances, getTodayReviews, getOpenTask
               </div>
             )}
             {lowBudgetAlerts.map(alert => (
-              <div key={`${alert.client_id}-${alert.platform}`} className="flex items-center gap-3 p-3 rounded-md bg-danger/5 border border-danger/20">
+              <div
+                key={`${alert.client_id}-${alert.platform}`}
+                onClick={() => navigate(`/clientes/${alert.client_id}`)}
+                className="flex items-center gap-3 p-3 rounded-md bg-danger/5 border border-danger/20 cursor-pointer hover:bg-danger/10 transition-colors"
+              >
                 <Wallet className="w-4 h-4 text-danger flex-shrink-0" />
                 <span className="text-sm flex-1">
                   {isFiltered && <><span className="font-medium">{alert.clientName}</span> — </>}
