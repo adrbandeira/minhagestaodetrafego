@@ -212,3 +212,35 @@ function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label
     </div>
   );
 }
+
+function ReviewAlertsList({ clients }: { clients: { id: string; name: string }[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const MAX_VISIBLE = 3;
+  const hasMore = clients.length > MAX_VISIBLE;
+  const visible = expanded ? clients : clients.slice(0, MAX_VISIBLE);
+
+  return (
+    <div className="space-y-2">
+      {visible.map(client => (
+        <div key={client.id} className="flex items-center gap-3 p-3 rounded-md bg-warn/5 border border-warn/20">
+          <AlertTriangle className="w-4 h-4 text-warn flex-shrink-0" />
+          <span className="text-sm flex-1">
+            <span className="font-medium">{client.name}</span> sem revisão há mais de 3 dias
+          </span>
+        </div>
+      ))}
+      {hasMore && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors w-full justify-center py-1.5"
+        >
+          {expanded ? (
+            <>Mostrar menos <ChevronUp className="w-3.5 h-3.5" /></>
+          ) : (
+            <>+ {clients.length - MAX_VISIBLE} cliente{clients.length - MAX_VISIBLE > 1 ? 's' : ''} sem revisão <ChevronDown className="w-3.5 h-3.5" /></>
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
