@@ -190,7 +190,7 @@ function DashboardContent({ tab, clients, balances, getTodayReviews, getOpenTask
             {lowBudgetAlerts.map(alert => (
               <div
                 key={`${alert.client_id}-${alert.platform}`}
-                onClick={() => navigate(`/clientes/${alert.client_id}`)}
+                onClick={() => navigate(`/cliente/${alert.client_id}`)}
                 className="flex items-center gap-3 p-3 rounded-md bg-danger/5 border border-danger/20 cursor-pointer hover:bg-danger/10 transition-colors"
               >
                 <Wallet className="w-4 h-4 text-danger flex-shrink-0" />
@@ -231,7 +231,7 @@ function ReviewAlertsList({ clients }: { clients: { id: string; name: string }[]
       {visible.map(client => (
         <div
           key={client.id}
-          onClick={() => navigate(`/clientes/${client.id}`)}
+          onClick={() => navigate(`/cliente/${client.id}`)}
           className="flex items-center gap-3 p-3 rounded-md bg-warn/5 border border-warn/20 cursor-pointer hover:bg-warn/10 transition-colors"
         >
           <AlertTriangle className="w-4 h-4 text-warn flex-shrink-0" />
