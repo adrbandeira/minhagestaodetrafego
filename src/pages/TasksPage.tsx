@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '@/lib/store';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
 import PinGate from '@/components/PinGate';
 import {
@@ -13,6 +13,7 @@ type ClientTypeTab = 'agenciado' | 'pessoal';
 function TasksContent({ clientType }: { clientType: ClientTypeTab }) {
   const { tasks, toggleTask, addTask, deleteTask, getClientName, clients } = useStore();
   const [showForm, setShowForm] = useState(false);
+  const [showCompleted, setShowCompleted] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -23,17 +24,50 @@ function TasksContent({ clientType }: { clientType: ClientTypeTab }) {
 
   const filteredClients = useMemo(() => clients.filter(c => c.type === clientType), [clients, clientType]);
 
-  const sorted = useMemo(() => {
-    return [...tasks]
+  const { pending, completed } = useMemo(() => {
+    const relevant = [...tasks]
       .filter(t => {
-        if (!t.clientId) return true; // general tasks show in both
+        if (!t.clientId) return true;
         return clientIds.has(t.clientId);
       })
-      .sort((a, b) => {
-        if (a.done !== b.done) return a.done ? 1 : -1;
-        return a.dueDate.localeCompare(b.dueDate);
-      });
+      .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+    return {
+      pending: relevant.filter(t => !t.done),
+      completed: relevant.filter(t => t.done),
+    };
   }, [tasks, clientIds]);
+
+  const renderTask = (t: any) => {
+    const isDueToday = t.dueDate === today && !t.done;
+    const isOverdue = t.dueDate < today && !t.done;
+    return (
+      <div key={t.id} className={`flex items-center gap-3 p-4 rounded-lg bg-card border transition-colors ${isDueToday || isOverdue ? 'border-danger/40' : 'border-border'}`}>
+        <input type="checkbox" checked={t.done} onChange={() => toggleTask(t.id)} className="w-4 h-4 rounded accent-primary cursor-pointer" />
+        <span className={`text-sm flex-1 ${t.done ? 'line-through text-muted-foreground' : ''}`}>{t.title}</span>
+        <span className="text-[12px] text-muted-foreground">{getClientName(t.clientId)}</span>
+        <span className={`text-[11px] font-mono ${isDueToday ? 'text-danger font-medium' : isOverdue ? 'text-danger' : 'text-muted-foreground'}`}>
+          {formatDate(t.dueDate)}
+        </span>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button className="p-1 text-muted-foreground hover:text-destructive transition-colors">
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir tarefa</AlertDialogTitle>
+              <AlertDialogDescription>Tem certeza que deseja excluir esta tarefa?</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={() => deleteTask(t.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -47,39 +81,26 @@ function TasksContent({ clientType }: { clientType: ClientTypeTab }) {
       {showForm && <NewTaskForm clients={filteredClients} onAdd={(t) => { addTask(t); setShowForm(false); }} onCancel={() => setShowForm(false)} />}
 
       <div className="space-y-2">
-        {sorted.map(t => {
-          const isDueToday = t.dueDate === today && !t.done;
-          const isOverdue = t.dueDate < today && !t.done;
-          return (
-            <div key={t.id} className={`flex items-center gap-3 p-4 rounded-lg bg-card border transition-colors ${isDueToday || isOverdue ? 'border-danger/40' : 'border-border'}`}>
-              <input type="checkbox" checked={t.done} onChange={() => toggleTask(t.id)} className="w-4 h-4 rounded accent-primary cursor-pointer" />
-              <span className={`text-sm flex-1 ${t.done ? 'line-through text-muted-foreground' : ''}`}>{t.title}</span>
-              <span className="text-[12px] text-muted-foreground">{getClientName(t.clientId)}</span>
-              <span className={`text-[11px] font-mono ${isDueToday ? 'text-danger font-medium' : isOverdue ? 'text-danger' : 'text-muted-foreground'}`}>
-                {formatDate(t.dueDate)}
-              </span>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <button className="p-1 text-muted-foreground hover:text-destructive transition-colors">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Excluir tarefa</AlertDialogTitle>
-                    <AlertDialogDescription>Tem certeza que deseja excluir esta tarefa?</AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => deleteTask(t.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          );
-        })}
-        {sorted.length === 0 && <p className="text-muted-foreground text-sm">Nenhuma tarefa cadastrada.</p>}
+        {pending.map(renderTask)}
+        {pending.length === 0 && <p className="text-muted-foreground text-sm">Nenhuma tarefa pendente.</p>}
       </div>
+
+      {completed.length > 0 && (
+        <div className="mt-6">
+          <button
+            onClick={() => setShowCompleted(!showCompleted)}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-3"
+          >
+            {showCompleted ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            Concluídas ({completed.length})
+          </button>
+          {showCompleted && (
+            <div className="space-y-2 opacity-70">
+              {completed.map(renderTask)}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
