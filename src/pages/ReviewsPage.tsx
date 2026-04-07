@@ -200,7 +200,7 @@ export default function ReviewsPage() {
               Descreva o que foi analisado e as ações realizadas nesta revisão.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 overflow-hidden space-y-4 py-2">
+          <div className="flex-1 overflow-y-auto space-y-4 py-2">
             {/* Previous reviews */}
             {dialogClient && (() => {
               const clientHistory = getClientHistory(dialogClient.id);
