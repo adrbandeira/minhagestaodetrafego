@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '@/lib/store';
+import { Difficulty } from '@/lib/types';
 import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
+import { DifficultyBadge, DifficultySelector } from '@/components/Badges';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -15,14 +17,16 @@ export default function ClientTasks({ clientId }: { clientId: string }) {
   const [showCompleted, setShowCompleted] = useState(false);
   const [title, setTitle] = useState('');
   const [dueDate, setDueDate] = useState(today);
+  const [difficulty, setDifficulty] = useState<Difficulty | undefined>(undefined);
 
   const pending = useMemo(() => tasks.filter(t => !t.done), [tasks]);
   const completed = useMemo(() => tasks.filter(t => t.done), [tasks]);
 
   const handleAdd = () => {
     if (title) {
-      addTask({ title, clientId, dueDate, done: false });
+      addTask({ title, clientId, dueDate, done: false, difficulty });
       setTitle('');
+      setDifficulty(undefined);
       setShowForm(false);
     }
   };
@@ -33,6 +37,7 @@ export default function ClientTasks({ clientId }: { clientId: string }) {
       <div key={t.id} className={`flex items-center gap-3 p-3 rounded-lg bg-card border ${isDueToday ? 'border-danger/40' : 'border-border'}`}>
         <input type="checkbox" checked={t.done} onChange={() => toggleTask(t.id)} className="w-4 h-4 rounded accent-primary cursor-pointer" />
         <span className={`text-sm flex-1 ${t.done ? 'line-through text-muted-foreground' : ''}`}>{t.title}</span>
+        <DifficultyBadge difficulty={t.difficulty} />
         <span className={`text-[11px] font-mono ${isDueToday ? 'text-danger' : 'text-muted-foreground'}`}>
           {new Date(t.dueDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
         </span>
@@ -75,6 +80,10 @@ export default function ClientTasks({ clientId }: { clientId: string }) {
           <div>
             <label className="text-[12px] text-muted-foreground block mb-1">Prazo</label>
             <DatePicker value={dueDate} onChange={setDueDate} className="w-full bg-surface2 border-border" />
+          </div>
+          <div>
+            <label className="text-[12px] text-muted-foreground block mb-1">Dificuldade</label>
+            <DifficultySelector value={difficulty} onChange={setDifficulty} />
           </div>
           <button onClick={handleAdd} className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium">Salvar</button>
         </div>

@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '@/lib/store';
+import { Difficulty } from '@/lib/types';
 import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
+import { DifficultyBadge, DifficultySelector } from '@/components/Badges';
 import PinGate from '@/components/PinGate';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -45,6 +47,7 @@ function TasksContent({ clientType }: { clientType: ClientTypeTab }) {
         <input type="checkbox" checked={t.done} onChange={() => toggleTask(t.id)} className="w-4 h-4 rounded accent-primary cursor-pointer" />
         <span className={`text-sm flex-1 ${t.done ? 'line-through text-muted-foreground' : ''}`}>{t.title}</span>
         <span className="text-[12px] text-muted-foreground">{getClientName(t.clientId)}</span>
+        <DifficultyBadge difficulty={t.difficulty} />
         <span className={`text-[11px] font-mono ${isDueToday ? 'text-danger font-medium' : isOverdue ? 'text-danger' : 'text-muted-foreground'}`}>
           {formatDate(t.dueDate)}
         </span>
@@ -140,6 +143,7 @@ function NewTaskForm({ clients, onAdd, onCancel }: { clients: any[]; onAdd: (t: 
   const [title, setTitle] = useState('');
   const [clientId, setClientId] = useState<string | null>(null);
   const [dueDate, setDueDate] = useState(new Date().toISOString().split('T')[0]);
+  const [difficulty, setDifficulty] = useState<Difficulty | undefined>(undefined);
 
   return (
     <div className="bg-card border border-border rounded-lg p-5 mb-4 space-y-4">
@@ -160,8 +164,12 @@ function NewTaskForm({ clients, onAdd, onCancel }: { clients: any[]; onAdd: (t: 
           <DatePicker value={dueDate} onChange={setDueDate} className="w-full bg-surface2 border-border" />
         </div>
       </div>
+      <div>
+        <label className="text-[12px] text-muted-foreground block mb-1">Dificuldade</label>
+        <DifficultySelector value={difficulty} onChange={setDifficulty} />
+      </div>
       <div className="flex gap-2">
-        <button onClick={() => { if (title) onAdd({ title, clientId, dueDate, done: false }); }} className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors">Salvar</button>
+        <button onClick={() => { if (title) onAdd({ title, clientId, dueDate, done: false, difficulty }); }} className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors">Salvar</button>
         <button onClick={onCancel} className="px-4 py-2 bg-surface2 text-muted-foreground rounded-md text-sm hover:text-foreground transition-colors">Cancelar</button>
       </div>
     </div>

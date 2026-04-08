@@ -338,6 +338,7 @@ export type Database = {
         Row: {
           client_id: string | null
           created_at: string
+          difficulty: string | null
           done: boolean
           due_date: string
           id: string
@@ -348,6 +349,7 @@ export type Database = {
         Insert: {
           client_id?: string | null
           created_at?: string
+          difficulty?: string | null
           done?: boolean
           due_date: string
           id?: string
@@ -358,6 +360,7 @@ export type Database = {
         Update: {
           client_id?: string | null
           created_at?: string
+          difficulty?: string | null
           done?: boolean
           due_date?: string
           id?: string
