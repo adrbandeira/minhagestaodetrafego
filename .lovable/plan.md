@@ -1,23 +1,30 @@
 
 
-## Plano: Separar tarefas concluídas em seção colapsável
+## Plano: Adicionar campo de dificuldade às tarefas
 
 ### O que muda
-Na página de Tarefas, as tarefas concluídas (checkbox marcado) serão movidas para uma seção separada com um botão de expandir/colapsar, iniciando fechada. Assim, o foco fica nas tarefas pendentes.
+Cada tarefa passa a ter um nível de dificuldade (fácil, média, difícil) selecionável na criação. Na listagem, aparece como um pequeno badge colorido ao lado da data.
 
-### Implementação
+### Etapas
 
-**Arquivo: `src/pages/TasksPage.tsx`** — componente `TasksContent`
+**1. Migração no banco de dados**
+- Adicionar coluna `difficulty` (text, nullable, default `null`) na tabela `tasks`
+- Valores possíveis: `'facil'`, `'media'`, `'dificil'`
 
-1. Separar o array `sorted` em dois: `pending` (não concluídas) e `completed` (concluídas)
-2. Renderizar primeiro a lista de pendentes normalmente
-3. Abaixo, adicionar uma seção colapsável:
-   - Botão: **"Concluídas (X)"** com ícone ChevronDown/ChevronUp
-   - Estado `showCompleted` (default `false`)
-   - Quando aberto, mostra a lista de tarefas concluídas
-4. Aplicar a mesma lógica no componente `ClientTasks` (`src/components/ClientTasks.tsx`)
+**2. Atualizar tipo TypeScript**
+- `src/lib/types.ts`: adicionar `difficulty?: 'facil' | 'media' | 'dificil'` ao `Task`
 
-### Visual
-- Botão discreto com contagem, estilo similar aos toggles já existentes no app
-- Separador visual sutil entre pendentes e concluídas
+**3. Atualizar store**
+- `src/lib/store.tsx`: incluir `difficulty` no `mapTask`, no `addTask` (insert), e na leitura
+
+**4. Formulário de criação (ambos os locais)**
+- `src/pages/TasksPage.tsx` — `NewTaskForm`: adicionar seletor de dificuldade com 3 botões (Fácil / Média / Difícil)
+- `src/components/ClientTasks.tsx` — formulário inline: mesmo seletor
+
+**5. Visualização na lista de tarefas**
+- Em ambos `renderTask`, exibir um badge pequeno com cor:
+  - Fácil → verde
+  - Média → amarelo/laranja  
+  - Difícil → vermelho
+- Badge posicionado entre o nome do cliente e a data, discreto (text-[10px])
 
