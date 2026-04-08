@@ -27,12 +27,15 @@ export interface Review {
   summary?: string;
 }
 
+export type Difficulty = 'facil' | 'media' | 'dificil';
+
 export interface Task {
   id: string;
   clientId: string | null;
   title: string;
   dueDate: string;
   done: boolean;
+  difficulty?: Difficulty;
 }
 
 export interface Note {

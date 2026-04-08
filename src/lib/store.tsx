@@ -31,7 +31,7 @@ function mapReview(row: any): Review {
 }
 
 function mapTask(row: any): Task {
-  return { id: row.id, clientId: row.client_id, title: row.title, dueDate: row.due_date, done: row.done };
+  return { id: row.id, clientId: row.client_id, title: row.title, dueDate: row.due_date, done: row.done, difficulty: row.difficulty || undefined };
 }
 
 function mapNote(row: any): Note {
@@ -201,7 +201,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const userId = await getCurrentUserId();
     if (!userId) return;
     const { data, error } = await supabase.from('tasks').insert({
-      client_id: t.clientId, title: t.title, due_date: t.dueDate, done: t.done, user_id: userId,
+      client_id: t.clientId, title: t.title, due_date: t.dueDate, done: t.done, difficulty: t.difficulty || null, user_id: userId,
     }).select().single();
     if (data && !error) setTasks(prev => [...prev, mapTask(data)]);
   }, []);
